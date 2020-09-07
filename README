@@ -1,0 +1,36 @@
+====
+
+by James Lee <howpigcanfly@outlook.com>
+
+Introduction
+------------
+
+-------------------------------------------
+
+* `picocom`
+
+Compilation instructions
+------------------------
+
+This program is distributed as a standard autotools-based package.
+See the [INSTALL](/INSTALL) file for detailed instructions.
+
+When compiling from a [release tarball](https://hisham.hm/htop/releases/), run:
+
+    ./configure && make
+
+For compiling sources downloaded from the Git repository, run:
+
+    ./autogen.sh && ./configure && make
+
+By default `make install` will install into `/usr/local`, for changing
+the path use `./configure --prefix=/some/path`.
+
+See the manual page (`man htop`) or the on-line help ('F1' or 'h'
+inside `htop`) for a list of supported key commands.
+
+If not all keys work check your curses configuration.
+
+## License
+
+GNU General Public License, version 2 (GPL-2.0)
