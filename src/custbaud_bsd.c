@@ -38,7 +38,7 @@
  *   - Have not tested with more recent macOS or Ftdi driver until now.
  */
 
-#include "custbaud.h"
+#include <custbaud.h>
 
 /* Note that this code might also work with other BSD variants, but I have only
  * tested with those listed below. Also tested __NetBSD__ but won't work. */

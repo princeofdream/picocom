@@ -48,12 +48,14 @@
 #define _GNU_SOURCE
 #include <getopt.h>
 
-#include "fdio.h"
-#include "split.h"
-#include "term.h"
+#include <fdio.h>
+#include <split.h>
+#include <term.h>
 #ifdef LINENOISE
-#include "linenoise-1.0/linenoise.h"
+#include "linenoise.h"
 #endif
+
+#include <config.h>
 
 #include "custbaud.h"
 
@@ -1607,7 +1609,7 @@ show_usage(char *name)
     s = strrchr(name, '/');
     s = s ? s+1 : name;
 
-    printf("picocom v%s\n", VERSION_STR);
+    printf("picocom v%s\n", VERSION);
 
     printf("\nCompiled-in options:\n");
     printf("  TTY_Q_SZ is %d\n", TTY_Q_SZ);
@@ -1951,7 +1953,7 @@ parse_args(int argc, char *argv[])
         return;
 
 #ifndef NO_HELP
-    printf("picocom v%s\n", VERSION_STR);
+    printf("picocom v%s\n", VERSION);
     printf("\n");
     printf("port is        : %s\n", opts.port);
     printf("flowcontrol    : %s\n", flow_str[opts.flow]);
