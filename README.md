@@ -158,18 +158,18 @@ terminal. This is normal.
 
 To exit picocom you have to type:
 
-    C-a, C-x
+    C-q x
 
 Which means you have to type [Control-A] followed by [Control-X]. You
 can do this by pressing and holding down the [Control] key, then
 pressing (and releasing) the [A] key and then pressing (and releasing)
 the [X] key (while you still keep [Control] held down).
 
-This `C-a` is called the "escape character". It is used to inform
+This `C-q` is called the "escape character". It is used to inform
 picocom that the next character typed is to be interpreted as a
 command to picocom itself (in this case the exit command) and not to
 be sent-down to the serial port. There are several other commands
-(other than `C-a`, `C-x`), all prefixed by `C-a`.
+(other than `C-q`, `x`), all prefixed by `C-q`.
 
 Next you should take a look at the very detailed picocom manual
 page. It can be accessed like this (assuming you are inside the
