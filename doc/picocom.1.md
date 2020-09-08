@@ -660,18 +660,18 @@ operation and what happens in each such condition:
 
 # AUTHOR
 
-Written by Nick Patavalis <npat@efault.net>
+Written by James Lee <howpigcanfly@outlook.com>
 
 
 # AVAILABILITY
 
 Download the latest release from:
-<https://github.com/npat-efault/picocom/releases>
+<https://github.com/princeofdream/picocom/releases>
 
 
 # COPYRIGHT
 
-Copyright (c) 2003-2018 Nick Patavalis
+Copyright (c) 2018-2020 James Lee
 
 This file is part of Picocom.
 
