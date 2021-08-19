@@ -12,4 +12,10 @@ src/Makefile
 src/Makefile.in
 src/*.o
 stamp-h1
+config.guess
+config.guess~
+config.h.in~
+config.sub
+config.sub~
+configure~
 
