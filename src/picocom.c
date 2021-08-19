@@ -59,6 +59,19 @@
 
 #include "custbaud.h"
 
+struct misc_msg_t {
+	int index;
+
+	fd_set wr_set;
+	fd_set rd_set;
+	int wr_fd[2];
+	int rd_fd[2];
+
+	int fd;
+	int maxfd;
+	char *val;
+};
+
 /**********************************************************************/
 
 /* parity modes names */
@@ -1414,7 +1427,11 @@ loop(void)
         ST_COMMAND,
         ST_TRANSPARENT
     } state;
+#if 0
     fd_set rdset, wrset;
+#else
+	struct misc_msg_t misc_msg;
+#endif
     int r, n;
     int stdin_closed;
 
@@ -1424,16 +1441,32 @@ loop(void)
     else
         stdin_closed = 1;
 
+	pipe(misc_msg.wr_fd);
+	pipe(misc_msg.rd_fd);
     while ( ! sig_exit ) {
         struct timeval tv, *ptv;
 
         ptv = NULL;
+#if 0	// by jamesl optimize rd/wr fd set
         FD_ZERO(&rdset);
         FD_ZERO(&wrset);
+#else
+        FD_ZERO(&misc_msg.rd_set);
+        FD_ZERO(&misc_msg.wr_set);
+#endif
+#if 0	// by jamesl optimize rd/wr fd set
         if ( ! stdin_closed ) FD_SET(STI, &rdset);
         if ( ! opts.exit ) FD_SET(tty_fd, &rdset);
+#else
+        if ( ! stdin_closed ) FD_SET(STI, &misc_msg.rd_set);
+        if ( ! opts.exit ) FD_SET(tty_fd, &misc_msg.rd_set);
+#endif
         if ( tty_q.len ) {
+#if 0	// by jamesl optimize rd/wr fd set
             FD_SET(tty_fd, &wrset);
+#else
+            FD_SET(tty_fd, &misc_msg.wr_set);
+#endif
         } else {
             if ( opts.exit_after >= 0 ) {
                 msec2tv(&tv, opts.exit_after);
@@ -1445,7 +1478,11 @@ loop(void)
             }
         }
 
+#if 0	// by jamesl optimize rd/wr fd set
         r = select(tty_fd + 1, &rdset, &wrset, NULL, ptv);
+#else
+        r = select(tty_fd + 1, &misc_msg.rd_set, &misc_msg.wr_set, NULL, ptv);
+#endif
         if ( r < 0 )  {
             if ( errno == EINTR )
                 continue;
@@ -1457,7 +1494,12 @@ loop(void)
             return LE_IDLE;
         }
 
-        if ( FD_ISSET(STI, &rdset) ) {
+#if 0	// by jamesl optimize rd/wr fd set
+        if ( FD_ISSET(STI, &rdset) )
+#else
+        if ( FD_ISSET(STI, &misc_msg.rd_set) )
+#endif
+		{
             /* read from terminal */
             char buff_rd[STI_RD_SZ];
             int i;
@@ -1509,7 +1551,12 @@ loop(void)
         }
     skip_proc_STI:
 
-        if ( FD_ISSET(tty_fd, &rdset) ) {
+#if 0	// by jamesl optimize rd/wr fd set
+        if ( FD_ISSET(tty_fd, &rdset) )
+#else
+        if ( FD_ISSET(tty_fd, &misc_msg.rd_set) )
+#endif
+		{
 
             char buff_rd[TTY_RD_SZ];
             char buff_map[TTY_RD_SZ * M_MAXMAP];
@@ -1539,7 +1586,12 @@ loop(void)
             }
         }
 
-        if ( FD_ISSET(tty_fd, &wrset) ) {
+#if 0
+        if ( FD_ISSET(tty_fd, &wrset) )
+#else
+        if ( FD_ISSET(tty_fd, &misc_msg.wr_set) )
+#endif
+		{
 
             /* write to port */
 
