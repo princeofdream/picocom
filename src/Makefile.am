@@ -30,10 +30,18 @@ ppcom_headers = custbaud_bsd.h \
 				term.h \
 				termios2.h
 
+# LDADD = libsrvmgr.so
+
 target:
 	echo ${ppcom_SOURCES}
 
-.PHONY: ppcom-headers
+.PHONY: ppcom-headers clean-local distclean-local
 
 ppcom-headers: ${ppcom_headers}
+
+clean-local:
+
+distclean-local:
+	-rm -rf Makefile.in
+
 
