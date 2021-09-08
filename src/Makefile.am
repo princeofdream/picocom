@@ -8,6 +8,8 @@ AM_CFLAGS += -DUSE_FLOCK
 AM_CFLAGS += -DHISTFILE=\".picocom_history\"
 AM_CFLAGS += -DLINENOISE
 
+AM_LDFLAGS = -lpthread
+
 AM_CXXFLAGS = ${AM_CFLAGS}
 
 bin_PROGRAMS   = ppcom

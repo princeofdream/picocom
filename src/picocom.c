@@ -37,6 +37,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <limits.h>
+#include <time.h>
+#include <pthread.h>
 #ifdef USE_FLOCK
 #include <sys/file.h>
 #endif
@@ -55,6 +57,8 @@
 #include "linenoise.h"
 #endif
 
+#include <debug.h>
+
 #include <config.h>
 
 #include "custbaud.h"
@@ -66,6 +70,9 @@ struct misc_msg_t {
 	fd_set rd_set;
 	int wr_fd[2];
 	int rd_fd[2];
+
+	pthread_t wr_pthread_id;
+	pthread_t rd_pthread_id;
 
 	int fd;
 	int maxfd;
@@ -1420,6 +1427,57 @@ enum le_reason {
     LE_SIGNAL
 };
 
+
+void *msgs_wr_routine(void *param)
+{
+	struct misc_msg_t *msgs = (struct misc_msg_t*)param;
+	char msgs_buf[1024];
+
+#if 0
+	while (1) {
+		read(msgs->wr_fd[0], msgs_buf, sizeof(msgs_buf));
+		printf("[ %d ] msg read: %s\n", __LINE__, msgs_buf);
+	}
+#endif
+	return NULL;
+}
+
+void *msgs_rd_routine(void *param)
+{
+	struct misc_msg_t *misc_msg = (struct misc_msg_t*)param;
+	char buf[TTY_RD_SZ+1];
+	char msg_val[4096];
+	char msg_tmp[4096];
+	unsigned long loop_count;
+
+	loop_count=0;
+	memset(msg_val, 0x0, sizeof(msg_val));
+	while (1) {
+		int change_line=0;
+
+		memset(buf, 0x0, sizeof(buf));
+		read(misc_msg->rd_fd[0], buf, sizeof(buf));
+		if (misc_msg->fd > 0) {
+#if 1
+			memset(msg_tmp, 0x0, sizeof(msg_tmp));
+			sprintf(msg_tmp, "[%s]", buf);
+			write(misc_msg->fd, msg_tmp, strlen(msg_tmp));
+#else
+			write(misc_msg->fd, buf, strlen(buf));
+#endif
+		}
+
+		if (strlen(msg_val) == 0) {
+			sprintf(msg_val, "[loop:%d]", loop_count);
+		} else {
+			sprintf(msg_val, "[loop:<<%d>>]", loop_count);
+		}
+		loop_count++;
+	}
+	return NULL;
+}
+
+
 enum le_reason
 loop(void)
 {
@@ -1435,14 +1493,40 @@ loop(void)
     int r, n;
     int stdin_closed;
 
+#if 1
+	struct timeval st_tv;
+	struct tm *st_tm;
+	char st_log_path[1024];
+#endif
+
     state = ST_TRANSPARENT;
     if ( ! opts.exit )
         stdin_closed = 0;
     else
         stdin_closed = 1;
 
+#if 1
+	misc_msg.index = 1;
 	pipe(misc_msg.wr_fd);
 	pipe(misc_msg.rd_fd);
+	pthread_create(&(misc_msg.wr_pthread_id), NULL,
+			msgs_wr_routine, &misc_msg);
+	pthread_create(&(misc_msg.rd_pthread_id), NULL,
+			msgs_rd_routine, &misc_msg);
+#endif
+
+#if 0
+	gettimeofday(&st_tv, NULL);
+	st_tm = localtime(&st_tv.tv_sec);
+	memset(st_log_path,0x0,sizeof(st_log_path));
+	sprintf(st_log_path,"%s/logs/log_ppcom_%d%02d%02d_%02d%02d%02d.log",
+			getenv("HOME"),
+			st_tm->tm_year+1900,st_tm->tm_mon+1,st_tm->tm_mday,
+			st_tm->tm_hour,st_tm->tm_min,st_tm->tm_sec);
+
+	printf("get path: %s\n", st_log_path);
+	misc_msg.fd = open(st_log_path, O_RDWR|O_APPEND|O_CREAT, 0644);
+#endif
     while ( ! sig_exit ) {
         struct timeval tv, *ptv;
 
@@ -1577,6 +1661,23 @@ loop(void)
                 if ( opts.log_filename )
                     if ( writen_ni(log_fd, buff_rd, n) < n )
                         fatal("write to logfile failed: %s", strerror(errno));
+#if 1
+				if (misc_msg.index > 0) {
+					writen_ni(misc_msg.rd_fd[1], buff_rd, n);
+				}
+#endif
+#if 0
+				if (misc_msg.fd > 0)
+				{
+					char *msg_buf;
+
+					msg_buf = (char*)malloc(n+128);
+					memset(msg_buf, 0x0, n+128);
+					sprintf(msg_buf, "[james_st]%s[james_end]", buff_rd);
+					writen_ni(misc_msg.fd, msg_buf, n+strlen("[james_st][james_end]"));
+					free(msg_buf);
+				}
+#endif
                 for (i = 0; i < n; i++) {
                     bmp += do_map(bmp, opts.imap, buff_rd[i]);
                 }
