@@ -1,5 +1,5 @@
 SUBDIRS = src
-SUBDIRS += src/libsrvmgr
+# SUBDIRS += src/libsrvmgr
 
 AM_CFLAGS = -I${top_srcdir}/include
 

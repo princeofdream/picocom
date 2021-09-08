@@ -48,4 +48,5 @@ clean-local:
 
 distclean-local:
 	-rm -rf Makefile.in
+	-rm -rf .deps
 

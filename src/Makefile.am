@@ -30,6 +30,7 @@ ppcom_headers = custbaud_bsd.h \
 				term.h \
 				termios2.h
 
+SUBDIRS = libsrvmgr
 # LDADD = libsrvmgr.so
 
 target:
