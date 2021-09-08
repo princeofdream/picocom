@@ -1,14 +1,18 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
-AC_INIT(picocom, 3.2a, howpigcanfly@outlook.com)
+AC_PREREQ([2.71])
+AC_INIT([picocom],[3.2a],[howpigcanfly@outlook.com])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_CXX
+AC_PROG_RANLIB
+LT_INIT
 
 # Checks for libraries.
 
@@ -29,5 +33,6 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([atexit dup2 memmove memset select strcasecmp strchr strdup strerror strrchr strtol])
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile])
+                 src/Makefile
+				 src/libsrvmgr/Makefile])
 AC_OUTPUT
