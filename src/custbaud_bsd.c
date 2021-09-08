@@ -87,7 +87,7 @@ int cfgetispeed_custom(const struct termios *tiop) {
 #undef tcsetattr
 
 /***************************************************************************/
-/* The strategy of picocom's terminal handling library is to hold all the
+/* The strategy of ppcom's terminal handling library is to hold all the
  * terminal settings (including baudrate) using termios struct.
  * Problem on macOS is, that tcsetattr() will fail if termios contains an
  * unusual baudrate (like e.g. 12345 of 12M), The official macOS way to apply

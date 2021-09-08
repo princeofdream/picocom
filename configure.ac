@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.71])
-AC_INIT([picocom],[3.2a],[howpigcanfly@outlook.com])
+AC_INIT([ppcom],[3.2a],[howpigcanfly@outlook.com])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])

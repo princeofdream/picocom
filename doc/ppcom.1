@@ -5,13 +5,13 @@
 .nh \" Turn off hyphenation by default.
 .SH NAME
 .PP
-picocom \- minimal dumb\-terminal emulation program
+ppcom \- minimal dumb\-terminal emulation program
 .SH SYNOPSIS
 .PP
-\f[B]picocom\f[] [ \f[I]options\f[] ] \f[I]device\f[]
+\f[B]ppcom\f[] [ \f[I]options\f[] ] \f[I]device\f[]
 .SH DESCRIPTION
 .PP
-As its name suggests, \f[B]picocom(1)\f[] is a minimal dumb\-terminal
+As its name suggests, \f[B]ppcom(1)\f[] is a minimal dumb\-terminal
 emulation program.
 It is, in principle, very much like \f[B]minicom(1)\f[], only it\[aq]s
 "pico" instead of "mini"! It was designed to serve as a simple, manual,
@@ -21,13 +21,13 @@ program to allow access to all types of devices that provide serial
 consoles.
 It could also prove useful in many other similar tasks.
 .PP
-In effect, picocom is not an "emulator" per\-se.
+In effect, ppcom is not an "emulator" per\-se.
 It is a simple program that opens, configures, manages a serial port
 (tty device) and its settings, and connects to it the terminal emulator
 you are, most likely, already using (the terminal window application,
 xterm, rxvt, system console, etc).
 .PP
-When picocom starts it opens the tty (serial port) given as its
+When ppcom starts it opens the tty (serial port) given as its
 non\-option argument (or the \f[I]last\f[] non\-option argument, if
 multiple are given).
 Unless the \f[B]\-\-noinit\f[] option is given, it configures the port
@@ -35,7 +35,7 @@ to the settings specified by the option\-arguments (or to some default
 settings), and sets it to "raw" mode.
 If \f[B]\-\-noinit\f[] is given, the initialization and configuration is
 skipped; the port is just opened.
-Following this, if standard input is a tty, picocom sets the tty to raw
+Following this, if standard input is a tty, ppcom sets the tty to raw
 mode.
 Then it goes in a loop where it listens for input from stdin, or from
 the serial port.
@@ -47,11 +47,11 @@ character, called the \f[I]escape character\f[] (being by default
 If the escape character is seen, then instead of sending it to the
 serial\-device, the program enters "command mode" and waits for the next
 character (which is called the "function character").
-Depending on the value of the function character, picocom performs one
+Depending on the value of the function character, ppcom performs one
 of the operations described in the \f[B]COMMANDS\f[] section below.
 .SH COMMANDS
 .PP
-Commands are given to picocom by first keying the \f[I]espace
+Commands are given to ppcom by first keying the \f[I]espace
 character\f[] which by default is \f[B]C\-a\f[] (see \f[B]OPTIONS\f[]
 below for how to change it), and then keying one of the function
 (command) characters shown here.
@@ -83,7 +83,7 @@ serial port settings are not reset, but the modem\-control lines
 .B \f[B]C\-q\f[]
 Quit the program \f[I]without\f[] resetting the serial port to its
 original settings.
-Terminating with the Quit command, picocom behaves \f[I]exactly\f[] as
+Terminating with the Quit command, ppcom behaves \f[I]exactly\f[] as
 if the \f[B]\-\-noreset\f[] option was given.
 The serial port is \f[I]not\f[] reset to its original settings, and the
 modem control lines remain unaffected or are cleared, subject to the
@@ -273,9 +273,9 @@ Must be one of: \f[B]1\f[], or \f[B]2\f[].
 .RE
 .TP
 .B \f[B]\-\-escape\f[] | \f[B]\-e\f[]
-Defines the character that will make picocom enter command\-mode (see
+Defines the character that will make ppcom enter command\-mode (see
 description above).
-If \f[B]x\f[] is given, then \f[B]C\-x\f[] will make picocom enter
+If \f[B]x\f[] is given, then \f[B]C\-x\f[] will make ppcom enter
 command mode.
 See also the \f[B]\-\-no\-escape\f[] option.
 (Default: \f[B]a\f[])
@@ -285,7 +285,7 @@ See also the \f[B]\-\-no\-escape\f[] option.
 .B \f[B]\-\-no\-escape\f[] | \f[B]\-n\f[]
 Disables the escape character.
 Picocom will never enter command\-mode if this option is given.
-To exit picocom, in this case, you must either close its standard input,
+To exit ppcom, in this case, you must either close its standard input,
 or send it the TERM or INT signal.
 (Default: Disabled).
 .RS
@@ -301,10 +301,10 @@ configuration (see \f[B]\-\-emap\f[] option).
 .RE
 .TP
 .B \f[B]\-\-noinit\f[] | \f[B]\-i\f[]
-If given, picocom will not initialize, configure, or otherwise mess with
+If given, ppcom will not initialize, configure, or otherwise mess with
 the serial port at start\-up.
 It will just open it.
-This is useful, for example, for connecting picocom to
+This is useful, for example, for connecting ppcom to
 already\-connected modems, or already configured ports without
 terminating the connection, or altering their settings.
 If required, serial port parameters can then be adjusted at run\-time by
@@ -315,16 +315,16 @@ See also the \f[B]\-\-noreset\f[] and \f[B]\-\-hangup\f[] options.
 .RE
 .TP
 .B \f[B]\-\-noreset\f[] | \f[B]\-r\f[]
-If given, picocom will not reset the serial port when exiting.
+If given, ppcom will not reset the serial port when exiting.
 It will just close the respective file descriptor and do nothing more.
 The serial port settings will \f[I]not\f[] be restored to their original
 values and, unless the \f[B]\-\-hangup\f[] option is also given, the
 modem\-control lines will \f[I]not\f[] be affected.
 This is useful, for example, for leaving modems connected when exiting
-picocom.
+ppcom.
 Regardless whether the \f[B]\-\-noreset\f[] option is given, the user
-can exit picocom using the "Quit" command (instead of "Exit"), which
-makes picocom behave \f[I]exactly\f[] as if \f[B]\-\-noreset\f[] was
+can exit ppcom using the "Quit" command (instead of "Exit"), which
+makes ppcom behave \f[I]exactly\f[] as if \f[B]\-\-noreset\f[] was
 given.
 See also the \f[B]\-\-hangup\f[] option.
 (Default: Disabled)
@@ -335,37 +335,37 @@ NOTICE: Picocom clears the modem control lines on exit by setting the
 Picocom always sets HUPCL according to the \f[B]\-\-noreset\f[] and
 \f[B]\-\-hangup\f[] options.
 If \f[B]\-\-noreset\f[] is given and \f[B]\-\-hangup\f[] is not, then
-HUPCL for the port is cleared and will remain so after exiting picocom.
+HUPCL for the port is cleared and will remain so after exiting ppcom.
 If \f[B]\-\-noreset\f[] is \f[I]not\f[] given, or if both
 \f[B]\-\-noreset\f[] and \f[B]\-\-hangup\f[] are given, then HUPCL is
-set for the port and will remain so after exiting picocom.
-This is true, regardless of the way picocom terminates (command, read
+set for the port and will remain so after exiting ppcom.
+This is true, regardless of the way ppcom terminates (command, read
 zero\-bytes from standard input, killed by signal, fatal error, etc),
 and regardless of the \f[B]\-\-noinit\f[] option.
 .RE
 .TP
 .B \f[B]\-\-hangup\f[] | \f[B]\-u\f[]
-If given together with \f[B]\-\-noreset\f[], picocom will not reset the
+If given together with \f[B]\-\-noreset\f[], ppcom will not reset the
 serial port to it\[aq]s original settings on exit, but it \f[I]will\f[]
 clear the modem control lines (typically DTR and RTS) to signal a modem
 hangup.
 Without the \f[B]\-\-noreset\f[] option (explicitly given, or implied by
 exiting with the "Quit" command) \f[B]\-\-hangup\f[] has no effect
-(without \f[B]\-\-noreset\f[] picocom always clears the modem control
+(without \f[B]\-\-noreset\f[] ppcom always clears the modem control
 lines on exit, anyway).
 .RS
 .RE
 .TP
 .B \f[B]\-\-nolock\f[] | \f[B]\-l\f[]
-If given, picocom will \f[I]not\f[] attempt to lock the serial port
+If given, ppcom will \f[I]not\f[] attempt to lock the serial port
 before opening it.
-Normally, depending on how it\[aq]s compiled, picocom attempts to get a
+Normally, depending on how it\[aq]s compiled, ppcom attempts to get a
 UUCP\-style lock\-file (e.g.
 \[aq]/var/lock/LCK..ttyS0\[aq]) before opening the port, or attempts to
 lock the port device\-node using \f[B]flock(2)\f[].
 Failing to do so, results in the program exiting after emitting an
 error\-message.
-It is possible that your picocom binary is compiled without support for
+It is possible that your ppcom binary is compiled without support for
 locking.
 In this case the \f[B]\-\-nolock\f[] option is accepted, but has no
 effect.
@@ -434,7 +434,7 @@ If local\-echo mode is is enabled (see \f[B]\-\-echo\f[] option and
 .B \f[B]\-\-initstring\f[] | \f[B]\-t\f[]
 Send the provided string after opening and configuring the serial port.
 The init string is sent exactly as if it was input at the terminal.
-Sending the init string, picocom observes the \f[B]\-\-omap\f[] output
+Sending the init string, ppcom observes the \f[B]\-\-omap\f[] output
 mapping, the \f[B]\-\-echo\f[] local\-echo setting, and the
 \f[B]\-\-emap\f[] local\-echo mapping.
 This feature is useful, for example, if the serial device needs some
@@ -446,7 +446,7 @@ Example:
 .IP
 .nf
 \f[C]
-picocom\ \-t\ "$(echo\ \-ne\ \[aq]AAATZ\\r\\n\[aq])"\ /dev/ttyS0
+ppcom\ \-t\ "$(echo\ \-ne\ \[aq]AAATZ\\r\\n\[aq])"\ /dev/ttyS0
 \f[]
 .fi
 .PP
@@ -503,16 +503,16 @@ On most systems the signal is raised.
 .RE
 .TP
 .B \f[B]\-\-exit\-aftrer\f[] | \f[B]\-x\f[]
-Exit picocom if it remains idle for the specified time (in
+Exit ppcom if it remains idle for the specified time (in
 milliseconds).
 Picocom is considered idle if: Nothing is read (received) from the
 serial port, AND there is nothing to write (send) to the serial port,
 AND nothing is read from the standard input (terminal).
-If \f[B]\-\-exit\-after\f[] is set to zero, then picocom exits after
+If \f[B]\-\-exit\-after\f[] is set to zero, then ppcom exits after
 opening and configuring the serial port, after sending the init string
 (if any, see option \f[B]\-\-initstring\f[]) and immediately when it
 becomes idle.
-When exiting after being idle, picocom drains the O/S serial port output
+When exiting after being idle, ppcom drains the O/S serial port output
 buffer (i.e.
 waits for data already written to the port to be transmitted) and
 observes the \f[B]\-\-noreset\f[] and \f[B]\-\-hangup\f[] options as
@@ -522,26 +522,26 @@ usual.
 .PP
 NOTICE: If \f[B]\-\-exit\-after\f[] is set, reading zero bytes from the
 standard input (which usually means that whatever was connected there
-has been closed), will \f[I]not\f[] cause picocom to exit.
-Instead, picocom will keep running, \f[I]without\f[] reading from stdin,
+has been closed), will \f[I]not\f[] cause ppcom to exit.
+Instead, ppcom will keep running, \f[I]without\f[] reading from stdin,
 and will exit only when it becomes idle for the specified time, or if it
 is killed by a signal.
 If \f[B]\-\-exit\-after\f[] is \f[I]not\f[] set, then reading zero bytes
-from the standard input causes picocom to exit, after the contents of
+from the standard input causes ppcom to exit, after the contents of
 its output queue have been transmitted.
 .RE
 .TP
 .B \f[B]\-\-exit\f[] | \f[B]\-X\f[]
-Exit picocom immediately after opening and configuring the serial port.
+Exit ppcom immediately after opening and configuring the serial port.
 Do \f[I]not\f[] read \f[I]anything\f[] from the standard input or from
 the serial port.
 When exiting the \f[B]\-\-noreset\f[] and \f[B]\-\-hangup\f[] options
 are observed as usual.
 With \f[B]\-\-exit\f[] and \f[B]\-\-noreset\f[] (and possibly
-\f[B]\-\-hangup\f[]) picocom can be used as a very crude replacement of
+\f[B]\-\-hangup\f[]) ppcom can be used as a very crude replacement of
 \f[B]stty(1)\f[].
 If an init string is also given (see \f[B]\-\-initstring\f[] option),
-picocom exits imediatelly after sending (writing) the init string to the
+ppcom exits imediatelly after sending (writing) the init string to the
 serial port and draining the O/S serial port output buffer (i.e.
 waiting for data written to the port to be transmitted).
 Again, nothing is read from the standard input, or from the serial port.
@@ -552,7 +552,7 @@ option.
 .RE
 .TP
 .B \f[B]\-\-quiet\f[] | \f[B]\-q\f[]
-Forces picocom to be quiet.
+Forces ppcom to be quiet.
 Suppresses the output of the initial status and options information, as
 well as any other information or messages not explicitly requested by
 the user.
@@ -574,7 +574,7 @@ commands that change program options (\f[B]C\-b\f[], \f[B]C\-u\f[],
 \f[B]C\-d\f[], \f[B]C\-f\f[], etc) print messages showing the current
 values (or the new values, if they were changed) for the respective
 options.
-If picocom determines that an actual serial\-port setting differs from
+If ppcom determines that an actual serial\-port setting differs from
 the current value of the respective option (for whatever reason), then
 the value of the option is shown followed by the value of the actual
 serial\-port setting in parenthesis.
@@ -590,7 +590,7 @@ This means that a baud rate of 115200bps has been selected (from the
 command line, or using commands that change the baudrate) but the
 serial\-port is actually operating at 9600bps (the driver may not
 support the higher setting, and has silently replaced it with a safe
-default, or the setting may have been changed from outside picocom).
+default, or the setting may have been changed from outside ppcom).
 If the option and the corresponding serial\-port setting are the same,
 only a single value is shown.
 Example:
@@ -601,7 +601,7 @@ Example:
 \f[]
 .fi
 .PP
-This behavior was introduced in picocom 2.0.
+This behavior was introduced in ppcom 2.0.
 Older releases displayed only the option values, not the actual
 serial\-port settings corresponding to them.
 .PP
@@ -636,13 +636,13 @@ The name of, and the command\-line options to, the program to be used
 for transmitting files are given by the \f[B]\-\-send\-cmd\f[] option.
 Similarly the program to receive files, and its arguments, are given by
 the \f[B]\-\-receive\-cmd\f[] option.
-For example, in order to start a picocom session that uses
+For example, in order to start a ppcom session that uses
 \f[B]sz(1)\f[] to transmit files, and \f[B]rz(1)\f[] to receive files,
 you have to say something like this:
 .IP
 .nf
 \f[C]
-picocom\ \-\-send\-cmd\ "sz\ \-vv"\ \-\-receive\-cmd\ "rz\ \-vv"\ ...
+ppcom\ \-\-send\-cmd\ "sz\ \-vv"\ \-\-receive\-cmd\ "rz\ \-vv"\ ...
 \f[]
 .fi
 .PP
@@ -650,32 +650,32 @@ If the argument to the \f[B]\-send\-cmd\f[] option, or the argument to
 the \f[B]\-\-receive\-cmd\f[] option is the empty string, then the
 respective command is disabled.
 For example, in order to disable both the "send" and the "receive"
-commands you can invoke picocom like this:
+commands you can invoke ppcom like this:
 .IP
 .nf
 \f[C]
-picocom\ \-\-send\-cmd\ \[aq]\[aq]\ \-\-receive\-cmd\ \[aq]\[aq]\ ...
+ppcom\ \-\-send\-cmd\ \[aq]\[aq]\ \-\-receive\-cmd\ \[aq]\[aq]\ ...
 \f[]
 .fi
 .PP
-A picocom session with both, the send\- and the receive\-file commands
+A ppcom session with both, the send\- and the receive\-file commands
 disabled does not \f[B]fork(2)\f[] and does not run any external
 programs.
 .PP
-During the picocom session, if you key the "send" or "receive" commands
+During the ppcom session, if you key the "send" or "receive" commands
 (e.g.
 by pressing \f[B]C\-a\f[], \f[B]C\-s\f[], or \f[B]C\-a\f[],
 \f[B]C\-r\f[]) you will be prompted for a filename.
 At this prompt you can enter one or more file\-names, and any additional
 arguments to the transmission or reception program.
 Command\-line editing and rudimentary pathname completion are available
-at this prompt, if you have compiled picocom with support for the
+at this prompt, if you have compiled ppcom with support for the
 linenoise library.
 Pressing \f[B]C\-c\f[] at this prompt will cancel the file transfer
-command and return to normal picocom operation.
+command and return to normal ppcom operation.
 After entering a filename (and / or additional transmission or reception
 program arguments) and assuming you have not canceled the operation by
-pressing \f[B]C\-c\f[], picocom will start the external program as
+pressing \f[B]C\-c\f[], ppcom will start the external program as
 specified by the \f[B]\-\-send\-cmd\f[], or \f[B]\-\-receive\-cmd\f[]
 option, and with any filenames and additional arguments you may have
 supplied.
@@ -686,13 +686,13 @@ terminal which\-\-\-while the program is running\-\-\-will revert to
 canonical mode.
 Pressing \f[B]C\-c\f[] while the external program is running will
 prematurely terminate it (assuming that the program itself does not
-ignore SIGINT), and return control to picocom.
+ignore SIGINT), and return control to ppcom.
 Pressing \f[B]C\-c\f[] at any other time, has no special effect; the
 character is normally passed to the serial port.
 .SH INPUT, OUTPUT, AND ECHO MAPPING
 .PP
 Using the \f[B]\-\-imap\f[], \f[B]\-\-omap\f[], and \f[B]\-\-emap\f[]
-options you can make picocom map (translate, replace) certain special
+options you can make ppcom map (translate, replace) certain special
 characters after being read from the serial port (with
 \f[B]\-\-imap\f[]), before being written to the serial port (with
 \f[B]\-\-omap\f[]), and before being locally echoed to the terminal
@@ -746,7 +746,7 @@ For example the command:
 .IP
 .nf
 \f[C]
-picocom\ \-\-omap\ crlf,delbs\ \-\-imap\ ignlf,bsdel\ \-\-emap\ crcrlf\ ...
+ppcom\ \-\-omap\ crlf,delbs\ \-\-imap\ ignlf,bsdel\ \-\-emap\ crcrlf\ ...
 \f[]
 .fi
 .PP
@@ -764,7 +764,7 @@ Replace every CR character with CR and LF when echoing to the terminal
 (if local\-echo is enabled).
 .SH EXITING PICOCOM
 .PP
-This section summarizes the conditions in which picocom terminates its
+This section summarizes the conditions in which ppcom terminates its
 operation and what happens in each such condition:
 .IP \[bu] 2
 The exit command is seen in the standard input.
@@ -777,7 +777,7 @@ but not yet transmitted) are discarded (flushed).
 Then the serial port is reset to it\[aq]s original settings, and the
 modem\-control lines are cleared signaling a modem reset, subject to the
 \f[B]\-\-noreset\f[] and the \f[B]\-\-hangup\f[] options.
-After that picocom exits with a success status.
+After that ppcom exits with a success status.
 .IP \[bu] 2
 The quit command is seen in the standard input.
 That is, the escape character is seen (default \f[B]C\-a\f[]), followed
@@ -797,19 +797,19 @@ happens in this case.
 Picocom exits with a success exit status.
 .IP \[bu] 2
 Zero bytes are read from the standard input.
-This usually means that whatever was connected to picocom\[aq]s standard
-input has been closed or, if a file was connected, then picocom has read
+This usually means that whatever was connected to ppcom\[aq]s standard
+input has been closed or, if a file was connected, then ppcom has read
 up to the end of the file.
 In this case, if the \f[B]\-\-exit\-after\f[] option is \f[I]not\f[]
-given, picocom stops reading from the standard input, and keeps
+given, ppcom stops reading from the standard input, and keeps
 operating normally (i.e.
 writing to, and reading from, the serial port) until its output queue
 empties.
-When this happens, picocom waits for the O/S serial port output buffer
+When this happens, ppcom waits for the O/S serial port output buffer
 to drain and then (subject to the \f[B]\-\-noreset\f[] and
 \f[B]\-\-hangup\f[] options) resets the serial port to it\[aq]s initial
 settings, clears the modem\-control lines, and exits.
-If the \f[B]\-\-exit\-after\f[] option is given then, again, picocom
+If the \f[B]\-\-exit\-after\f[] option is given then, again, ppcom
 stops reading from the standard input and continues operating normally
 but, in this case, it does so until it becomes idle for the specified
 amount of time, before exiting.
@@ -817,19 +817,19 @@ Picocom exits with a success exit status.
 .IP \[bu] 2
 Picocom is killed by the TERM or INT signal, or an unrecoverable error
 occurs.
-In this case picocom behaves as if it had received the exit command,
+In this case ppcom behaves as if it had received the exit command,
 that is: The contents of the output queue and the contents of the O/S
 serial port output buffer are discarded (flushed).
 Then, subject to the \f[B]\-\-noreset\f[] and \f[B]\-\-hangup\f[]
 options, the serial port is reset to its original settings, the modem
-control lines are cleared, and picocom exits with a failure status.
+control lines are cleared, and ppcom exits with a failure status.
 .SH AUTHOR
 .PP
 Written by James Lee <howpigcanfly@outlook.com>
 .SH AVAILABILITY
 .PP
 Download the latest release from:
-<https://github.com/princeofdream/picocom/releases>
+<https://github.com/princeofdream/ppcom/releases>
 .SH COPYRIGHT
 .PP
 Copyright (c) 2003\-2018 James Lee

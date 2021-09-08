@@ -1,5 +1,5 @@
 
-Notes about running picocom on BSD-based OSes
+Notes about running ppcom on BSD-based OSes
 =============================================
 
 by Joe Merten (https://github.com/JoeMerten)
@@ -27,7 +27,7 @@ Test environment
   Just minor testing with this uart, because it seems that it don't
   supports non standard baudrates.
 
-For Cygwin, I'd just checked if it will build and ran `picocom
+For Cygwin, I'd just checked if it will build and ran `ppcom
 -h`. I'd personally failed opening a serial port within Cygwin.
 Note that for Cygwin it needs to implement a `cfmakeraw()`
 replacement. See also:

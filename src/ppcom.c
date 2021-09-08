@@ -1,6 +1,6 @@
 /* vi: set sw=4 ts=4:
  *
- * picocom.c
+ * ppcom.c
  *
  * simple dumb-terminal program. Helps you manually configure and test
  * stuff like modems, devices w. serial ports, etc.
@@ -108,8 +108,8 @@ const char *flow_str[] = {
 #define CKEY(c) ((c) & 0x1f)
 #define NORKEY(c) (c)
 
-#define KEY_EXIT    NORKEY('x') /* exit picocom */
-#define KEY_QUIT    NORKEY('q') /* exit picocom without reseting port */
+#define KEY_EXIT    NORKEY('x') /* exit ppcom */
+#define KEY_QUIT    NORKEY('q') /* exit ppcom without reseting port */
 #define KEY_PULSE   NORKEY('p') /* pulse DTR */
 #define KEY_TOG_DTR NORKEY('t') /* toggle DTR */
 #define KEY_TOG_RTS NORKEY('g') /* toggle RTS */
@@ -1037,7 +1037,7 @@ show_keys()
     fd_printf(STO, "*** Picocom commands (all prefixed by [C-%c])\r\n",
               KEYC(opts.escape));
     fd_printf(STO, "\r\n");
-    fd_printf(STO, "*** [C-%c] : Exit picocom\r\n",
+    fd_printf(STO, "*** [C-%c] : Exit ppcom\r\n",
               KEYC(KEY_EXIT));
     fd_printf(STO, "*** [C-%c] : Exit without reseting serial port\r\n",
               KEYC(KEY_QUIT));
@@ -1124,7 +1124,7 @@ run_cmd(int fd, const char *cmd, const char *args_extra)
         fd_printf(STO, "*** cannot fork: %s ***\r\n", strerror(errno));
         return -1;
     } else if ( pid ) {
-        /* father: picocom */
+        /* father: ppcom */
         int status, r;
 
         /* reset the mask */
@@ -1232,7 +1232,7 @@ int tty_q_push(const char *s, int len) {
     return i;
 }
 
-/* Process command key. Returns non-zero if command results in picocom
+/* Process command key. Returns non-zero if command results in ppcom
    exit, zero otherwise. */
 int
 do_command (unsigned char c)
@@ -1615,7 +1615,7 @@ loop(void)
                     } else {
                         /* process command key */
                         if ( do_command(c) )
-                            /* picocom exit */
+                            /* ppcom exit */
                             return LE_CMD;
                     }
                     state = ST_TRANSPARENT;
@@ -1763,7 +1763,7 @@ show_usage(char *name)
     s = strrchr(name, '/');
     s = s ? s+1 : name;
 
-    printf("picocom v%s\n", VERSION);
+    printf("ppcom v%s\n", VERSION);
 
     printf("\nCompiled-in options:\n");
     printf("  TTY_Q_SZ is %d\n", TTY_Q_SZ);
@@ -2107,7 +2107,7 @@ parse_args(int argc, char *argv[])
         return;
 
 #ifndef NO_HELP
-    printf("picocom v%s\n", VERSION);
+    printf("ppcom v%s\n", VERSION);
     printf("\n");
     printf("port is        : %s\n", opts.port);
     printf("flowcontrol    : %s\n", flow_str[opts.flow]);
@@ -2332,7 +2332,7 @@ main (int argc, char *argv[])
     /* Enter main processing loop */
     ler = loop();
 
-    /* Terminating picocom */
+    /* Terminating ppcom */
     pinfo("\r\n");
     pinfo("Terminating...\r\n");
 
@@ -2345,7 +2345,7 @@ main (int argc, char *argv[])
         pinfo("Picocom was killed\r\n");
         xcode = EXIT_FAILURE;
     } else
-        pinfo("Thanks for using picocom\r\n");
+        pinfo("Thanks for using ppcom\r\n");
 
     return xcode;
 }

@@ -1,4 +1,4 @@
 #!/bin/sh
-exec picocom \
+exec ppcom \
     --send-cmd="sz -b -vv" \
     --receive-cmd="rz -b -E -vv" "$@"

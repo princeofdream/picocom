@@ -6,17 +6,17 @@ header: User Commands
 
 # NAME
 
-picocom - minimal dumb-terminal emulation program
+ppcom - minimal dumb-terminal emulation program
 
 
 # SYNOPSIS
 
-**picocom** [ _options_ ] _device_
+**ppcom** [ _options_ ] _device_
 
 
 # DESCRIPTION
 
-As its name suggests, **picocom(1)** is a minimal dumb-terminal
+As its name suggests, **ppcom(1)** is a minimal dumb-terminal
 emulation program. It is, in principle, very much like **minicom(1)**,
 only it's "pico" instead of "mini"! It was designed to serve as a
 simple, manual, modem configuration, testing, and debugging tool. It
@@ -24,19 +24,19 @@ has also served (quite well) as a low-tech serial communications
 program to allow access to all types of devices that provide serial
 consoles. It could also prove useful in many other similar tasks.
 
-In effect, picocom is not an "emulator" per-se. It is a simple program
+In effect, ppcom is not an "emulator" per-se. It is a simple program
 that opens, configures, manages a serial port (tty device) and its
 settings, and connects to it the terminal emulator you are, most
 likely, already using (the terminal window application, xterm, rxvt,
 system console, etc).
 
-When picocom starts it opens the tty (serial port) given as its
+When ppcom starts it opens the tty (serial port) given as its
 non-option argument (or the *last* non-option argument, if multiple
 are given). Unless the **--noinit** option is given, it configures the
 port to the settings specified by the option-arguments (or to some
 default settings), and sets it to "raw" mode. If **--noinit** is
 given, the initialization and configuration is skipped; the port is
-just opened. Following this, if standard input is a tty, picocom sets
+just opened. Following this, if standard input is a tty, ppcom sets
 the tty to raw mode. Then it goes in a loop where it listens for input
 from stdin, or from the serial port. Input from the serial port is
 copied to the standard output while input from the standard input is
@@ -45,14 +45,14 @@ user-specified control character, called the _escape character_ (being
 by default **C-a**). If the escape character is seen, then instead of
 sending it to the serial-device, the program enters "command mode" and
 waits for the next character (which is called the "function
-character"). Depending on the value of the function character, picocom
+character"). Depending on the value of the function character, ppcom
 performs one of the operations described in the **[COMMANDS]** section
 below.
 
 
 # COMMANDS
 
-Commands are given to picocom by first keying the *espace character*
+Commands are given to ppcom by first keying the *espace character*
 which by default is **C-a** (see **[OPTIONS]** below for how to change
 it), and then keying one of the function (command) characters shown
 here.
@@ -78,7 +78,7 @@ here.
 **C-q**
 
 :   Quit the program *without* resetting the serial port to its
-    original settings. Terminating with the Quit command, picocom
+    original settings. Terminating with the Quit command, ppcom
     behaves *exactly* as if the **--noreset** option was given. The
     serial port is *not* reset to its original settings, and the modem
     control lines remain unaffected or are cleared, subject to the
@@ -227,15 +227,15 @@ Picocom accepts the following command-line options.
 
 **--escape** | **-e**
 
-:   Defines the character that will make picocom enter command-mode
+:   Defines the character that will make ppcom enter command-mode
     (see description above). If **x** is given, then **C-x** will make
-    picocom enter command mode. See also the **--no-escape**
+    ppcom enter command mode. See also the **--no-escape**
     option. (Default: **a**)
 
 **--no-escape** | **-n**
 
 :   Disables the escape character. Picocom will never enter
-    command-mode if this option is given. To exit picocom, in this
+    command-mode if this option is given. To exit ppcom, in this
     case, you must either close its standard input, or send it the
     TERM or INT signal. (Default: Disabled).
 
@@ -248,9 +248,9 @@ Picocom accepts the following command-line options.
 
 **--noinit** | **-i**
 
-:   If given, picocom will not initialize, configure, or otherwise
+:   If given, ppcom will not initialize, configure, or otherwise
     mess with the serial port at start-up. It will just open it. This
-    is useful, for example, for connecting picocom to
+    is useful, for example, for connecting ppcom to
     already-connected modems, or already configured ports without
     terminating the connection, or altering their settings. If
     required, serial port parameters can then be adjusted at run-time
@@ -259,15 +259,15 @@ Picocom accepts the following command-line options.
 
 **--noreset** | **-r**
 
-:   If given, picocom will not reset the serial port when exiting. It
+:   If given, ppcom will not reset the serial port when exiting. It
     will just close the respective file descriptor and do nothing
     more. The serial port settings will *not* be restored to their
     original values and, unless the **--hangup** option is also given,
     the modem-control lines will *not* be affected. This is useful,
     for example, for leaving modems connected when exiting
-    picocom. Regardless whether the **--noreset** option is given, the
-    user can exit picocom using the "Quit" command (instead of
-    "Exit"), which makes picocom behave *exactly* as if **--noreset**
+    ppcom. Regardless whether the **--noreset** option is given, the
+    user can exit ppcom using the "Quit" command (instead of
+    "Exit"), which makes ppcom behave *exactly* as if **--noreset**
     was given. See also the **--hangup** option. (Default: Disabled)
 
     NOTICE: Picocom clears the modem control lines on exit by setting
@@ -275,32 +275,32 @@ Picocom accepts the following command-line options.
     sets HUPCL according to the **--noreset** and **--hangup**
     options. If **--noreset** is given and **--hangup** is not, then
     HUPCL for the port is cleared and will remain so after exiting
-    picocom. If **--noreset** is *not* given, or if both **--noreset**
+    ppcom. If **--noreset** is *not* given, or if both **--noreset**
     and **--hangup** are given, then HUPCL is set for the port and
-    will remain so after exiting picocom. This is true, regardless of
-    the way picocom terminates (command, read zero-bytes from standard
+    will remain so after exiting ppcom. This is true, regardless of
+    the way ppcom terminates (command, read zero-bytes from standard
     input, killed by signal, fatal error, etc), and regardless of the
     **--noinit** option.
 
 **--hangup** | **-u**
 
-:   If given together with **--noreset**, picocom will not reset the
+:   If given together with **--noreset**, ppcom will not reset the
     serial port to it's original settings on exit, but it *will* clear
     the modem control lines (typically DTR and RTS) to signal a modem
     hangup. Without the **--noreset** option (explicitly given, or
     implied by exiting with the "Quit" command) **--hangup** has no
-    effect (without **--noreset** picocom always clears the modem
+    effect (without **--noreset** ppcom always clears the modem
     control lines on exit, anyway).
 
 **--nolock** | **-l**
 
-:   If given, picocom will _not_ attempt to lock the serial port
+:   If given, ppcom will _not_ attempt to lock the serial port
     before opening it. Normally, depending on how it's compiled,
-    picocom attempts to get a UUCP-style lock-file
+    ppcom attempts to get a UUCP-style lock-file
     (e.g. '/var/lock/LCK..ttyS0') before opening the port, or attempts
     to lock the port device-node using **flock(2)**. Failing to do so,
     results in the program exiting after emitting an error-message. It
-    is possible that your picocom binary is compiled without support
+    is possible that your ppcom binary is compiled without support
     for locking. In this case the **--nolock** option is accepted, but
     has no effect. (Default: Disabled)
 
@@ -353,14 +353,14 @@ Picocom accepts the following command-line options.
 
 :   Send the provided string after opening and configuring the serial
     port. The init string is sent exactly as if it was input at the
-    terminal. Sending the init string, picocom observes the **--omap**
+    terminal. Sending the init string, ppcom observes the **--omap**
     output mapping, the **--echo** local-echo setting, and the
     **--emap** local-echo mapping. This feature is useful, for
     example, if the serial device needs some special magic strings to
     start responding. Use **echo(1)** or **xxd(1)** to generate
     special characters like a CR or binary data. Example:
 
-        picocom -t "$(echo -ne 'AAATZ\r\n')" /dev/ttyS0
+        ppcom -t "$(echo -ne 'AAATZ\r\n')" /dev/ttyS0
 
     Note, that the init string is not sent if **--noinit** is
     given. (Default: empty).
@@ -406,37 +406,37 @@ Picocom accepts the following command-line options.
 
 **--exit-aftrer** | **-x**
 
-:   Exit picocom if it remains idle for the specified time (in
+:   Exit ppcom if it remains idle for the specified time (in
     milliseconds). Picocom is considered idle if: Nothing is read
     (received) from the serial port, AND there is nothing to write
     (send) to the serial port, AND nothing is read from the standard
-    input (terminal). If **--exit-after** is set to zero, then picocom
+    input (terminal). If **--exit-after** is set to zero, then ppcom
     exits after opening and configuring the serial port, after sending
     the init string (if any, see option **--initstring**) and
     immediately when it becomes idle. When exiting after being idle,
-    picocom drains the O/S serial port output buffer (i.e. waits for
+    ppcom drains the O/S serial port output buffer (i.e. waits for
     data already written to the port to be transmitted) and observes
     the **--noreset** and **--hangup** options as usual. (Default: not
     set).
 
     NOTICE: If **--exit-after** is set, reading zero bytes from the
     standard input (which usually means that whatever was connected
-    there has been closed), will *not* cause picocom to exit. Instead,
-    picocom will keep running, *without* reading from stdin, and will
+    there has been closed), will *not* cause ppcom to exit. Instead,
+    ppcom will keep running, *without* reading from stdin, and will
     exit only when it becomes idle for the specified time, or if it is
     killed by a signal. If **--exit-after** is *not* set, then reading
-    zero bytes from the standard input causes picocom to exit, after
+    zero bytes from the standard input causes ppcom to exit, after
     the contents of its output queue have been transmitted.
 
 **--exit** | **-X**
 
-:    Exit picocom immediately after opening and configuring the serial
+:    Exit ppcom immediately after opening and configuring the serial
      port. Do *not* read *anything* from the standard input or from
      the serial port. When exiting the **--noreset** and **--hangup**
      options are observed as usual. With **--exit** and **--noreset**
-     (and possibly **--hangup**) picocom can be used as a very crude
+     (and possibly **--hangup**) ppcom can be used as a very crude
      replacement of **stty(1)**. If an init string is also given (see
-     **--initstring** option), picocom exits imediatelly after sending
+     **--initstring** option), ppcom exits imediatelly after sending
      (writing) the init string to the serial port and draining the O/S
      serial port output buffer (i.e. waiting for data written to the
      port to be transmitted). Again, nothing is read from the standard
@@ -445,7 +445,7 @@ Picocom accepts the following command-line options.
 
 **--quiet** | **-q**
 
-:   Forces picocom to be quiet. Suppresses the output of the initial
+:   Forces ppcom to be quiet. Suppresses the output of the initial
     status and options information, as well as any other information or
     messages not explicitly requested by the user. Responses to user
     commands and any error or warning messages are still printed.
@@ -462,7 +462,7 @@ Picocom accepts the following command-line options.
 The "show program options" command (**C-v**), as well as the commands
 that change program options (**C-b**, **C-u**, **C-d**, **C-f**, etc)
 print messages showing the current values (or the new values, if they
-were changed) for the respective options. If picocom determines that
+were changed) for the respective options. If ppcom determines that
 an actual serial-port setting differs from the current value of the
 respective option (for whatever reason), then the value of the option
 is shown followed by the value of the actual serial-port setting in
@@ -475,12 +475,12 @@ command line, or using commands that change the baudrate) but the
 serial-port is actually operating at 9600bps (the driver may not
 support the higher setting, and has silently replaced it with a safe
 default, or the setting may have been changed from outside
-picocom). If the option and the corresponding serial-port setting are
+ppcom). If the option and the corresponding serial-port setting are
 the same, only a single value is shown. Example:
 
     *** baud: 9600
 
-This behavior was introduced in picocom 2.0. Older releases displayed
+This behavior was introduced in ppcom 2.0. Older releases displayed
 only the option values, not the actual serial-port settings
 corresponding to them.
 
@@ -509,32 +509,32 @@ The name of, and the command-line options to, the program to be used
 for transmitting files are given by the **--send-cmd**
 option. Similarly the program to receive files, and its arguments, are
 given by the **--receive-cmd** option. For example, in order to start
-a picocom session that uses **sz(1)** to transmit files, and **rz(1)**
+a ppcom session that uses **sz(1)** to transmit files, and **rz(1)**
 to receive files, you have to say something like this:
 
-    picocom --send-cmd "sz -vv" --receive-cmd "rz -vv" ...
+    ppcom --send-cmd "sz -vv" --receive-cmd "rz -vv" ...
 
 If the argument to the **-send-cmd** option, or the argument to the
 **--receive-cmd** option is the empty string, then the respective
 command is disabled. For example, in order to disable both the "send"
-and the "receive" commands you can invoke picocom like this:
+and the "receive" commands you can invoke ppcom like this:
 
-    picocom --send-cmd '' --receive-cmd '' ...
+    ppcom --send-cmd '' --receive-cmd '' ...
 
-A picocom session with both, the send- and the receive-file commands
+A ppcom session with both, the send- and the receive-file commands
 disabled does not **fork(2)** and does not run any external programs.
 
-During the picocom session, if you key the "send" or "receive"
+During the ppcom session, if you key the "send" or "receive"
 commands (e.g. by pressing **C-a**, **C-s**, or **C-a**, **C-r**) you
 will be prompted for a filename. At this prompt you can enter one or
 more file-names, and any additional arguments to the transmission or
 reception program. Command-line editing and rudimentary pathname
-completion are available at this prompt, if you have compiled picocom
+completion are available at this prompt, if you have compiled ppcom
 with support for the linenoise library. Pressing **C-c** at this
 prompt will cancel the file transfer command and return to normal
-picocom operation. After entering a filename (and / or additional
+ppcom operation. After entering a filename (and / or additional
 transmission or reception program arguments) and assuming you have not
-canceled the operation by pressing **C-c**, picocom will start the
+canceled the operation by pressing **C-c**, ppcom will start the
 external program as specified by the **--send-cmd**, or
 **--receive-cmd** option, and with any filenames and additional
 arguments you may have supplied. The standard input and output of the
@@ -543,7 +543,7 @@ error of the external program will be connected to the terminal
 which---while the program is running---will revert to canonical
 mode. Pressing **C-c** while the external program is running will
 prematurely terminate it (assuming that the program itself does not
-ignore SIGINT), and return control to picocom. Pressing **C-c** at any
+ignore SIGINT), and return control to ppcom. Pressing **C-c** at any
 other time, has no special effect; the character is normally passed to
 the serial port.
 
@@ -551,7 +551,7 @@ the serial port.
 # INPUT, OUTPUT, AND ECHO MAPPING
 
 Using the **--imap**, **--omap**, and **--emap** options you can make
-picocom map (translate, replace) certain special characters after being
+ppcom map (translate, replace) certain special characters after being
 read from the serial port (with **--imap**), before being written to
 the serial port (with **--omap**), and before being locally echoed to
 the terminal (standard output) if local echo is enabled (with
@@ -585,7 +585,7 @@ applied.
 
 For example the command:
 
-    picocom --omap crlf,delbs --imap ignlf,bsdel --emap crcrlf ...
+    ppcom --omap crlf,delbs --imap ignlf,bsdel --emap crcrlf ...
 
 will:
 
@@ -603,7 +603,7 @@ will:
 
 # EXITING PICOCOM
 
-This section summarizes the conditions in which picocom terminates its
+This section summarizes the conditions in which ppcom terminates its
 operation and what happens in each such condition:
 
 - The exit command is seen in the standard input. That is, the escape
@@ -615,7 +615,7 @@ operation and what happens in each such condition:
   are discarded (flushed). Then the serial port is reset to it's
   original settings, and the modem-control lines are cleared signaling
   a modem reset, subject to the **--noreset** and the **--hangup**
-  options. After that picocom exits with a success status.
+  options. After that ppcom exits with a success status.
 
 - The quit command is seen in the standard input. That is, the escape
   character is seen (default **C-a**), followed by the quit command
@@ -633,28 +633,28 @@ operation and what happens in each such condition:
   case. Picocom exits with a success exit status.
 
 - Zero bytes are read from the standard input. This usually means that
-  whatever was connected to picocom's standard input has been closed
-  or, if a file was connected, then picocom has read up to the end of
+  whatever was connected to ppcom's standard input has been closed
+  or, if a file was connected, then ppcom has read up to the end of
   the file. In this case, if the **--exit-after** option is *not*
-  given, picocom stops reading from the standard input, and keeps
+  given, ppcom stops reading from the standard input, and keeps
   operating normally (i.e. writing to, and reading from, the serial
-  port) until its output queue empties. When this happens, picocom
+  port) until its output queue empties. When this happens, ppcom
   waits for the O/S serial port output buffer to drain and then
   (subject to the **--noreset** and **--hangup** options) resets the
   serial port to it's initial settings, clears the modem-control
   lines, and exits. If the **--exit-after** option is given then,
-  again, picocom stops reading from the standard input and continues
+  again, ppcom stops reading from the standard input and continues
   operating normally but, in this case, it does so until it becomes
   idle for the specified amount of time, before exiting. Picocom exits
   with a success exit status.
 
 - Picocom is killed by the TERM or INT signal, or an unrecoverable
-  error occurs. In this case picocom behaves as if it had received the
+  error occurs. In this case ppcom behaves as if it had received the
   exit command, that is: The contents of the output queue and the
   contents of the O/S serial port output buffer are discarded
   (flushed). Then, subject to the **--noreset** and **--hangup**
   options, the serial port is reset to its original settings, the
-  modem control lines are cleared, and picocom exits with a failure
+  modem control lines are cleared, and ppcom exits with a failure
   status.
 
 
@@ -666,7 +666,7 @@ Written by James Lee <howpigcanfly@outlook.com>
 # AVAILABILITY
 
 Download the latest release from:
-<https://github.com/princeofdream/picocom/releases>
+<https://github.com/princeofdream/ppcom/releases>
 
 
 # COPYRIGHT
