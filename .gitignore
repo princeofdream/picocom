@@ -18,4 +18,8 @@ config.h.in~
 config.sub
 config.sub~
 configure~
-
+compile
+depcomp
+install-sh
+missing
+INSTALL
