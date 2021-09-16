@@ -34,5 +34,6 @@ AC_CHECK_FUNCS([atexit dup2 memmove memset select strcasecmp strchr strdup strer
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
+                 src/ppcom/Makefile
 				 src/libsrvmgr/Makefile])
 AC_OUTPUT
