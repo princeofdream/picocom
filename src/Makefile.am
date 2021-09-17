@@ -1,4 +1,5 @@
-SUBDIRS = ppcom libsrvmgr
+SUBDIRS = libsrvmgr
+SUBDIRS += ppcom
 
 AM_CFLAGS = -I${top_srcdir}/src/include
 AM_CFLAGS += -I${top_srcdir}/src/libsrvmgr/include

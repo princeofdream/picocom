@@ -10,6 +10,8 @@ AM_CFLAGS += -DHISTFILE=\".ppcom_history\"
 AM_CFLAGS += -DLINENOISE
 
 AM_LDFLAGS = -lpthread
+AM_LDFLAGS += -lsrvmgr
+AM_LDFLAGS += -L${top_srcdir}/src/libsrvmgr/
 
 AM_CXXFLAGS = ${AM_CFLAGS}
 
@@ -31,7 +33,7 @@ ppcom_headers = custbaud_bsd.h \
 				term.h \
 				termios2.h
 
-# LDADD = libsrvmgr.so
+LDADD = ${top_srcdir}/src/libsrvmgr/libsrvmgr.la
 
 target:
 	echo ${ppcom_SOURCES}
