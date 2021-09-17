@@ -47,7 +47,10 @@
 #include <libgen.h>
 #endif
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif /* ifndef _GNU_SOURCE */
+
 #include <getopt.h>
 
 #include <fdio.h>

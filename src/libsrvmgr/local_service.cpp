@@ -527,7 +527,7 @@ local_service::register_serv_handler(void *(*proc_func)(void* param), void* para
 {
 	serv_handler_callback = proc_func;
 	serv_handler_param = param;
-	return NULL;
+	return 0;
 }
 
 int
@@ -535,6 +535,6 @@ local_service::register_cli_handler(void *(*proc_func)(void* param), void* param
 {
 	cli_handler_callback = proc_func;
 	cli_handler_param = param;
-	return NULL;
+	return 0;
 }
 

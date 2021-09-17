@@ -10,7 +10,7 @@ AM_CXXFLAGS = ${AM_CFLAGS}
 
 
 pkglib_LTLIBRARIES = libsrvmgr.la
-libsrvmgr_la_LDFLAGS = -module -avoid-version -shared
+libsrvmgr_la_LDFLAGS = -avoid-version -shared
 
 # lib_LIBRARIES   = libsrvmgr.la
 libsrvmgr_la_SOURCES  = local_service.cpp   \

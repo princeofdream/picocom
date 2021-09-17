@@ -31,7 +31,7 @@ misc_utils::conv_gbk_to_utf8(char* src_str, char* dest_str)
 {
 	int ret;
 
-	char *utf8_src = "小鹏WiFiAP-";
+	char *utf8_src = "wifi-ap-";
 	char dest[1024];
 
 	// memset(dest, 0x0, sizeof(dest));
