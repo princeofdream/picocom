@@ -212,7 +212,7 @@ print_map (int flags)
 
 /**********************************************************************/
 
-struct {
+typedef struct ppcom_opt {
     char *port;
     int baud;
     enum flowcntrl_e flow;
@@ -242,37 +242,9 @@ struct {
     int raise_rts;
     int raise_dtr;
     int quiet;
-} opts = {
-    .port = NULL,
-    .baud = 9600,
-    .flow = FC_NONE,
-    .parity = P_NONE,
-    .databits = 8,
-    .stopbits = 1,
-    .lecho = 0,
-    .noinit = 0,
-    .noreset = 0,
-    .hangup = 0,
-#if defined (UUCP_LOCK_DIR) || defined (USE_FLOCK)
-    .nolock = 0,
-#endif
-    .escape = CKEY('q'),
-    .noescape = 0,
-    .send_cmd = "sz -vv",
-    .receive_cmd = "rz -vv -E",
-    .imap = M_I_DFL,
-    .omap = M_O_DFL,
-    .emap = M_E_DFL,
-    .log_filename = NULL,
-    .initstring = NULL,
-    .exit_after = -1,
-    .exit = 0,
-    .lower_rts = 0,
-    .lower_dtr = 0,
-    .raise_rts = 0,
-    .raise_dtr = 0,
-    .quiet = 0
-};
+} ppcom_opt_t;
+
+ppcom_opt_t opts;
 
 int sig_exit = 0;
 
@@ -571,7 +543,7 @@ init_history (void)
     home_directory = getenv("HOME");
     if (home_directory) {
         home_directory_len = strlen(home_directory);
-        history_file_path = malloc(home_directory_len + 2 + strlen(HISTFILE));
+        history_file_path = (char*)malloc(home_directory_len + 2 + strlen(HISTFILE));
         memcpy(history_file_path, home_directory, home_directory_len + 1);
         if (home_directory[home_directory_len - 1] != '/') {
             strcat(history_file_path, "/");
@@ -1205,17 +1177,17 @@ run_cmd(int fd, const char *cmd, const char *args_extra)
 
 int tty_q_push(const char *s, int len) {
     int i, sz, n;
-    unsigned char *b;
+    unsigned char *byte_val;
 
     for (i = 0; i < len; i++) {
         while (tty_q.len + M_MAXMAP > tty_q.sz) {
             sz = tty_q.sz * 2;
             if ( TTY_Q_SZ && sz > TTY_Q_SZ )
                 return i;
-            b = realloc(tty_q.buff, sz);
-            if ( ! b )
+            byte_val = (unsigned char*)realloc(tty_q.buff, sz);
+            if ( ! byte_val )
                 return i;
-            tty_q.buff = b;
+            tty_q.buff = byte_val;
             tty_q.sz = sz;
 #if 0
             fd_printf(STO, "New tty_q size: %d\r\n", sz);
@@ -1841,6 +1813,44 @@ show_usage(char *name)
 /**********************************************************************/
 
 void
+init_default_options ()
+{
+	opts.port         = NULL;
+	opts.baud         = 9600;
+	opts.flow         = FC_NONE;
+	opts.parity       = P_NONE;
+	opts.databits     = 8;
+	opts.stopbits     = 1;
+	opts.lecho        = 0;
+	opts.noinit       = 0;
+	opts.noreset      = 0;
+	opts.hangup       = 0;
+	opts.escape       = CKEY('q');
+	opts.noescape     = 0;
+	opts.imap         = M_I_DFL;
+	opts.omap         = M_O_DFL;
+	opts.emap         = M_E_DFL;
+	opts.log_filename = NULL;
+	opts.initstring   = NULL;
+	opts.exit_after   = -1;
+	opts.exit         = 0;
+	opts.lower_rts    = 0;
+	opts.lower_dtr    = 0;
+	opts.raise_rts    = 0;
+	opts.raise_dtr    = 0;
+	opts.quiet        = 0;
+
+#if defined (UUCP_LOCK_DIR) || defined (USE_FLOCK)
+	opts.nolock = 0;
+#endif
+
+	memset(opts.send_cmd, 0x0, sizeof(opts.send_cmd));
+	memset(opts.receive_cmd, 0x0, sizeof(opts.receive_cmd));
+	sprintf(opts.send_cmd, "%s", "sz -vv");
+	sprintf(opts.receive_cmd, "%s", "rz -vv -E");
+}
+
+void
 parse_args(int argc, char *argv[])
 {
     int r;
@@ -2202,6 +2212,7 @@ main (int argc, char *argv[])
     int ler;
     int r;
 
+	init_default_options();
     parse_args(argc, argv);
 
     establish_signal_handlers();
@@ -2297,7 +2308,7 @@ main (int argc, char *argv[])
 #endif
 
     /* Allocate output buffer with initial size */
-    tty_q.buff = calloc(TTY_Q_SZ_MIN, sizeof(*tty_q.buff));
+    tty_q.buff = (unsigned char*)calloc(TTY_Q_SZ_MIN, sizeof(*tty_q.buff));
     if ( ! tty_q.buff )
         fatal("out of memory");
     tty_q.sz = TTY_Q_SZ_MIN;

@@ -16,14 +16,14 @@ AM_LDFLAGS += -L${top_srcdir}/src/libsrvmgr/
 AM_CXXFLAGS = ${AM_CFLAGS}
 
 bin_PROGRAMS   = ppcom
-ppcom_SOURCES  = linenoise.c
-ppcom_SOURCES += custbaud_bsd.c \
-				 custbaud.c \
-				 fdio.c \
-				 ppcom.c \
-				 split.c \
-				 term.c \
-				 termios2.c
+ppcom_SOURCES  = linenoise.cpp
+ppcom_SOURCES += custbaud_bsd.cpp \
+				 custbaud.cpp \
+				 fdio.cpp \
+				 ppcom.cpp \
+				 split.cpp \
+				 term.cpp \
+				 termios2.cpp
 
 ppcom_headers = custbaud_bsd.h \
 				custbaud.h \
