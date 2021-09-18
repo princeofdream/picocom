@@ -28,6 +28,7 @@ ppcom_SOURCES += custbaud_bsd.cpp \
 				 ppcom.cpp \
 				 split.cpp \
 				 term.cpp \
+				 log_server.cpp \
 				 termios2.cpp
 
 ppcom_headers = custbaud_bsd.h \
@@ -36,6 +37,7 @@ ppcom_headers = custbaud_bsd.h \
 				split.h \
 				termbits2.h \
 				term.h \
+				log_server.h \
 				termios2.h
 
 ppcom_cli_SOURCES  = ppcom_cli.cpp

@@ -64,9 +64,7 @@
 
 #include <config.h>
 
-#ifdef CONFIG_LIB_SRVMGR
-#include <service_manager.h>
-#endif
+#include <log_server.h>
 
 #include "custbaud.h"
 
@@ -1464,6 +1462,7 @@ loop(void)
         ST_COMMAND,
         ST_TRANSPARENT
     } state;
+	enum le_reason le_ret = LE_SIGNAL;
 #if 0
     fd_set rdset, wrset;
 #else
@@ -1493,6 +1492,8 @@ loop(void)
 	pthread_create(&(misc_msg.rd_pthread_id), NULL,
 			msgs_rd_routine, &misc_msg);
 #endif
+
+	start_log_server(NULL);
 
 #if 0
 	gettimeofday(&st_tv, NULL);
@@ -1537,7 +1538,12 @@ loop(void)
             } else if ( stdin_closed ) {
                 /* stdin closed, output queue empty, and no
                    idle timeout: Exit. */
+#if 0
                 return LE_STDIN;
+#else
+				le_ret = LE_STDIN;
+				goto loop_end;
+#endif
             }
         }
 
@@ -1554,7 +1560,12 @@ loop(void)
         }
         if ( r == 0 ) {
             /* Idle timeout expired */
+#if 0
             return LE_IDLE;
+#else
+			le_ret = LE_IDLE;
+			goto loop_end;
+#endif
         }
 
 #if 0	// by jamesl optimize rd/wr fd set
@@ -1593,9 +1604,15 @@ loop(void)
                             fd_printf(STO, "\x07");
                     } else {
                         /* process command key */
-                        if ( do_command(c) )
+                        if ( do_command(c) ) {
                             /* ppcom exit */
+#if 0
                             return LE_CMD;
+#else
+							le_ret = LE_CMD;
+							goto loop_end;
+#endif
+						}
                     }
                     state = ST_TRANSPARENT;
                     break;
@@ -1677,7 +1694,16 @@ loop(void)
             tty_q.len -= n;
         }
     }
+
+loop_end:
+
+	stop_log_server(NULL);
+
+#if 0
     return LE_SIGNAL;
+#else
+	return le_ret;
+#endif
 }
 
 /**********************************************************************/
@@ -2337,34 +2363,8 @@ main (int argc, char *argv[])
     }
 #endif
     pinfo("Terminal ready\r\n");
-
-#ifdef CONFIG_LIB_SRVMGR
-	// service_manager mgr_serv;
-	process_manager procmgr;
-
-	process_param m_procparam;
-	serv_param m_servparam;
-
-	// m_servparam.port = 8112;
-	memset(m_servparam.socket_path, 0x0, sizeof(m_servparam.socket_path));
-
-	// mgr_serv.set_service_type(MGR_SERVICE_SERV);
-	// m_servparam.serv_cls = &mgr_serv;
-	m_servparam.serv_cls = NULL;
-
-	m_procparam.flags     = FLAG_WITH_PTHREAD;
-	// m_procparam.flags    |= FLAG_WITH_IP;
-	// m_procparam.flags    |= FLAG_BLOCK;
-	m_procparam.serv      = &m_servparam;
-	m_procparam.sub_param = NULL;
-
-	procmgr.start_routine=start_service_manager_proc;
-	procmgr.start_thread(&m_procparam);
-	// register_serv_handler(void *(*proc_func)(void* param), void* param)
-	logd("============== start_service_manager_proc <done> =================");
-
-#endif
     /* Enter main processing loop */
+
     ler = loop();
 
     /* Terminating ppcom */

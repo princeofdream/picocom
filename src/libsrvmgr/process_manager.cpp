@@ -89,10 +89,10 @@ process_manager::start_thread(void* param)
 
 	if ((mparam != NULL) && (mparam->flags & FLAG_SYNC_MUTEX) != FLAG_SYNC_MUTEX) {
 		pthread_mutex_unlock(&mlock);
-		pthread_mutex_lock(&mlock);
 	}
 
 	if (mparam != NULL) {
+		pthread_mutex_lock(&mlock);
 		pthread_mutex_unlock(&mlock);
 	}
 

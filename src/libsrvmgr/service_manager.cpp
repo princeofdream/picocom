@@ -332,7 +332,6 @@ service_manager_cli_handler(void* param)
 
 	// Start recv/send message thread
 	srvmgr->start_manager_client_recv_pthread(msg_param);
-		logd("cmd: %s", msg_param->cmd);
 	srvmgr->start_manager_client_send_pthread(msg_param);
 
 	if (mproc_param->serv != NULL) {
@@ -425,6 +424,8 @@ service_manager::start_manager_client_recv_pthread(message_param *msg_param)
 
 	mproc_recv.start_routine = start_manager_client_recv_proc;
 	mproc_recv.start_thread_sync_mutex((void*)&mproc_recv_param);
+
+	DBG("recv thread done");
 	return 0;
 }
 
