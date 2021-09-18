@@ -92,9 +92,9 @@
 // #define loge(frm,args...) ALOGE(frm,##args)
 // #define logd(frm,args...) ALOGD("--<%s:%d>---" frm "---\n",__FUNCTION__,__LINE__,##args)
 // #else
-// #define DBG(frm,args...) printf("--<%s:%d>---" frm "---\n",__FUNCTION__,__LINE__,##args)
-#define loge(frm,args...) printf(frm"\n",##args)
-#define logd(frm,args...) printf(frm"\n",##args)
+#define DBG(frm,args...) printf("[ %s:%d ]\t---" frm "\n",__FILE__,__LINE__,##args)
+#define loge(frm,args...) printf("[ %s:%d ]\t---" frm "\n",__FILE__,__LINE__,##args)
+#define logd(frm,args...) printf("[ %s:%d ]\t---" frm "\n",__FILE__,__LINE__,##args)
 // #endif
 // #else
 // #ifdef ANDROID
@@ -102,7 +102,7 @@
 // #define loge(frm,args...) ALOGE(frm,##args)
 // #define logd(frm,args...) ALOGD(frm,##args)
 // #else
-#define DBG(frm, args...) while(0){;}
+// #define DBG(frm, args...) while(0){;}
 // #define loge(frm,args...) printf(frm"\n",##args)
 // #define logd(frm,args...) printf(frm"\n",##args)
 // #endif
@@ -112,36 +112,36 @@
 #define MAX_VAL(var1, var2) ((var1 > var2)? var1:var2)
 
 typedef struct serv_param_t {
-	char  ip_str[MAXLEN];
-	int   port;
-	int   flag;
-	void* serv_cls;
-	void* serv_prm;
-	void* serv_ext;
+	char		socket_path[MAXLEN];
+	int			port;
+	uint32_t	flags;
+	void*		serv_cls;
+	void*		serv_prm;
+	void*		serv_ext;
 } serv_param;
 
 typedef struct process_param_t {
-	int servfd;
-	int listenfd;
-	int flag;
-	pid_t ppid;
-	pthread_mutex_t *mlock;
-	char cmd[1024];
-	serv_param *serv;
-	void *param;
-	int pipefd[2];
+	int				servfd;
+	int				listenfd;
+	uint32_t		flags;
+	pid_t			ppid;
+	pthread_mutex_t	*mlock;
+	char			cmd[1024];
+	serv_param		*serv;
+	void			*param;
+	int				pipefd[2];
 } process_param;
 
 typedef struct message_param_t {
-	int sockfd;
-	int index;
-	int count;
-	uint32_t flags;
-	char cmd[1024];
-	char **value;
-	void *param;
-	char *msg;
-	int result;
+	int			sockfd;
+	int			index;
+	int			count;
+	uint32_t	flags;
+	char		cmd[1024];
+	char		**value;
+	void		*param;
+	char		*msg;
+	int			result;
 } message_param;
 
 /*! \enum process_flags_t

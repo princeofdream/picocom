@@ -9,6 +9,10 @@ AM_CFLAGS += -DUSE_FLOCK
 AM_CFLAGS += -DHISTFILE=\".ppcom_history\"
 AM_CFLAGS += -DLINENOISE
 
+AM_CFLAGS += -DCONFIG_LIB_SRVMGR
+
+AM_CFLAGS += -g -O2
+
 AM_LDFLAGS = -lpthread
 AM_LDFLAGS += -lsrvmgr
 AM_LDFLAGS += -L${top_srcdir}/src/libsrvmgr/
@@ -16,6 +20,7 @@ AM_LDFLAGS += -L${top_srcdir}/src/libsrvmgr/
 AM_CXXFLAGS = ${AM_CFLAGS}
 
 bin_PROGRAMS   = ppcom
+bin_PROGRAMS  += ppcom_cli
 ppcom_SOURCES  = linenoise.cpp
 ppcom_SOURCES += custbaud_bsd.cpp \
 				 custbaud.cpp \
@@ -32,6 +37,8 @@ ppcom_headers = custbaud_bsd.h \
 				termbits2.h \
 				term.h \
 				termios2.h
+
+ppcom_cli_SOURCES  = ppcom_cli.cpp
 
 LDADD = ${top_srcdir}/src/libsrvmgr/libsrvmgr.la
 

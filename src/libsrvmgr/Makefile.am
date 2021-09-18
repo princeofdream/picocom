@@ -5,6 +5,8 @@ AM_CFLAGS  = -I${top_srcdir}/src/libsrvmgr/include
 AM_CFLAGS  += -lstdc++
 AM_CFLAGS  += -DCOMPILE_FOR_HOST
 
+AM_CFLAGS  += -g -O2
+
 AM_LDFLAGS = -lpthread
 AM_CXXFLAGS = ${AM_CFLAGS}
 
@@ -18,7 +20,7 @@ libsrvmgr_la_SOURCES  = local_service.cpp   \
 					netlink_event.cpp    \
 					network_manager.cpp  \
 					process_manager.cpp  \
-					manager_service.cpp  \
+					service_manager.cpp  \
 					misc_utils.cpp       \
 					network_filter.cpp   \
 					network_utils.cpp
@@ -31,7 +33,7 @@ libsrvmgr_la_headers = basic.h            \
 					network_manager.h  \
 					process_manager.h  \
 					local_service.h    \
-					manager_service.h  \
+					service_manager.h  \
 					misc_utils.h       \
 					network_filter.h   \
 					network_utils.h

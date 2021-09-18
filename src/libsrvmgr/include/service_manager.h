@@ -1,9 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename:  manager_service.h
+ *       Filename:  service_manager.h
  *
- *    Description:  manager_service header
+ *    Description:  service_manager header
  *
  *        Version:  1.0
  *        Created:  03/18/2019 11:12:24 AM
@@ -24,22 +24,22 @@
 #include <messages_manager.h>
 #include <local_service.h>
 
-/*! \enum manager_service_type_t
+/*! \enum service_manager_type_t
  *
  *  Detailed description
  */
-enum manager_service_type_t {
+enum service_manager_type_t {
 	MGR_SERVICE_SERV = 0,
 	MGR_SERVICE_CLI
 };
 
-void* start_manager_service_proc(void*);
+void* start_service_manager_proc(void*);
 
-class manager_service
+class service_manager
 {
 public:
-	manager_service ();
-	virtual ~manager_service ();
+	service_manager ();
+	virtual ~service_manager ();
 
 	int start_manager_server(void*);
 	int start_manager_client(void*);

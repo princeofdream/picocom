@@ -19,7 +19,8 @@
 #ifndef __PPCOM_DEBUG_HEADER__
 #define __PPCOM_DEBUG_HEADER__ 1
 
-#define JCG(frm,args...) printf("--[%s:%d]--<%s>--" frm "\n",__FILE__,__LINE__,__FUNCTION__,##args)
+#define JDG(frm,args...) printf("--[%s:%d]--<%s>--" frm "\n",__FILE__,__LINE__,__FUNCTION__,##args)
+#define JCG(frm,args...) printf("--[%s:%d]--" frm "\n",__FILE__,__LINE__,##args)
 
 
 

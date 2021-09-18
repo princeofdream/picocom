@@ -17,7 +17,7 @@
  */
 
 #include <local_service.h>
-#include <manager_service.h>
+#include <service_manager.h>
 #include <messages_manager.h>
 #include <network_manager.h>
 
@@ -31,10 +31,14 @@ serv_handler(void* param)
 	if (mparam == NULL)
 		return NULL;
 
-	logd("[%s:%d]--<%s>", __FILE__, __LINE__, __func__);
-
 	if (mparam->mlock != NULL)
 		pthread_mutex_unlock(mparam->mlock);
+
+	while (true)
+	{
+		logd("[%s:%d]--<%s>", __FILE__, __LINE__, __func__);
+	}
+
 	return (void*)NULL;
 }
 
@@ -52,6 +56,10 @@ cli_handler(void* param)
 	if (mparam->mlock != NULL)
 		pthread_mutex_unlock(mparam->mlock);
 
+	while (true)
+	{
+		logd("[%s:%d]--<%s>", __FILE__, __LINE__, __func__);
+	}
 	msockfd = mparam->listenfd;
 	logd("send message: %s", mparam->cmd);
 	wlen = write(msockfd, mparam->cmd, strlen(mparam->cmd)+1);
@@ -111,15 +119,15 @@ local_service::start_local_service(void* param)
 		return -EINVAL;
 	}
 
-	// mmsic.flag_to_string(mparam->flag, __FUNCTION__);
+	// mmsic.flag_to_string(mparam->flags, __FUNCTION__);
 
-	if ((mparam->flag & FLAG_WITH_IP) == FLAG_WITH_IP)
+	if ((mparam->flags & FLAG_WITH_IP) == FLAG_WITH_IP)
 		setup_ip_server(mparam);
 	else
-		setup_server();
+		setup_server(mparam);
 
 	// Unlock mlock from parent thread creater process_manager
-	if (((mparam->flag & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX) && (mparam->mlock != NULL)) {
+	if (((mparam->flags & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX) && (mparam->mlock != NULL)) {
 		logd("[mutex] unlock prarent thread <%s:%d>", __FUNCTION__,__LINE__);
 		pthread_mutex_unlock(mparam->mlock);
 	}
@@ -135,20 +143,19 @@ local_service::setup_ip_server(void* param)
 	int ret;
 	int port;
 
-	serv_param *mserv_param;
+	serv_param *mserv_param = NULL;
 	process_param *mparam = (process_param*)param;
-
-	if (mparam == NULL) {
-		loge("param is NULL, abort!");
-		return -EINVAL;
-	}
 
 	port = 8000;
 
-	mserv_param = (serv_param*)mparam->serv;
-	if (mserv_param != NULL) {
-		if (mserv_param->port > 0)
-			port = mserv_param->port;
+	if (mparam == NULL) {
+		loge("param is NULL, abort!");
+
+		mserv_param = (serv_param*)mparam->serv;
+		if (mserv_param != NULL) {
+			if (mserv_param->port > 0)
+				port = mserv_param->port;
+		}
 	}
 
 	memset(&serv_ip_addr,0,sizeof(serv_ip_addr));
@@ -178,11 +185,31 @@ local_service::setup_ip_server(void* param)
 }
 
 int
-local_service::setup_server(void)
+local_service::setup_server(void* param)
 {
 	int ret;
+	char server_name[MAXLEN];
+
+	serv_param *mserv_param = NULL;
+	process_param *mparam = (process_param*)param;
 
 	DBG("Enter: %s", __FUNCTION__);
+
+	memset(server_name, 0x0, sizeof(server_name));
+	sprintf(server_name, "%s", SOCKET_SERVER_NAME);
+
+	if (mparam == NULL) {
+		loge("param is NULL, abort!");
+
+		mserv_param = (serv_param*)mparam->serv;
+		if (mserv_param != NULL) {
+			if (strlen(mserv_param->socket_path) > 0) {
+				memset(server_name, 0x0, sizeof(server_name));
+				sprintf(server_name, "%s", mserv_param->socket_path);
+			}
+		}
+	}
+
 
 	servpid = getpid();
 	servfd = socket(AF_LOCAL, SOCK_STREAM, 0);
@@ -193,10 +220,10 @@ local_service::setup_server(void)
 
 	//setup server socket
 
-	unlink(SOCKET_SERVER_NAME);
+	unlink(server_name);
 	bzero(&servaddr, sizeof(servaddr));
 	servaddr.sun_family = AF_LOCAL;
-	strncpy(servaddr.sun_path, SOCKET_SERVER_NAME, sizeof(servaddr.sun_path) - 1);
+	strncpy(servaddr.sun_path, server_name, sizeof(servaddr.sun_path) - 1);
 	servlen = sizeof(servaddr);
 
 	ret = bind(servfd, (struct sockaddr *)&servaddr, servlen);
@@ -226,7 +253,7 @@ local_service::start_server(void* param)
 		return -EINVAL;
 	}
 
-	if((mparam->flag & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD)
+	if((mparam->flags & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD)
 	{
 		sa.sa_handler = SIG_IGN;
 		sigaction( SIGPIPE, &sa, 0 );
@@ -243,7 +270,7 @@ local_service::start_server(void* param)
 		char pipe_buffer[1024];
 		int ss_opt = 1;
 
-		if ((mparam->flag & FLAG_WITH_IP) == FLAG_WITH_IP)
+		if ((mparam->flags & FLAG_WITH_IP) == FLAG_WITH_IP)
 			listenfd = accept(servfd, (struct sockaddr *)&serv_ip_addr, (socklen_t *)&listenlen);
 		else
 			listenfd = accept(servfd, (struct sockaddr *)&servaddr, (socklen_t *)&listenlen);
@@ -255,6 +282,13 @@ local_service::start_server(void* param)
 			return -EINVAL;
 		}
 
+#if 0
+		memset(pipe_buffer, 0x0, sizeof(pipe_buffer));
+		read(listenfd, pipe_buffer, sizeof(pipe_buffer));
+		DBG("====<%s>====",pipe_buffer);
+		read(listenfd, pipe_buffer, sizeof(pipe_buffer));
+		DBG("====<%s>====",pipe_buffer);
+#endif
 		setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &ss_opt, sizeof(ss_opt));
 
 		mproc_serv_param.listenfd  = listenfd;
@@ -263,10 +297,10 @@ local_service::start_server(void* param)
 		mproc_serv_param.mlock     = mpm.get_thread_mutex();
 		mproc_serv_param.param     = serv_handler_param;
 		mproc_serv_param.serv      = mparam->serv;
-		mproc_serv_param.flag      = FLAG_WITH_PROCESS;
-		// mproc_serv_param.flag      = FLAG_WITH_PTHREAD;
-		// mproc_serv_param.flag     |= FLAG_SYNC_MUTEX;
-		// mproc_serv_param.flag     |= FLAG_BLOCK;
+		// mproc_serv_param.flags      = FLAG_WITH_PROCESS;
+		mproc_serv_param.flags      = FLAG_WITH_PTHREAD;
+		// mproc_serv_param.flags     |= FLAG_SYNC_MUTEX;
+		// mproc_serv_param.flags     |= FLAG_BLOCK;
 		// this should get after start porcess
 		mproc_serv_param.pipefd[0] = -EINVAL;
 		mproc_serv_param.pipefd[1] = -EINVAL;
@@ -277,7 +311,7 @@ local_service::start_server(void* param)
 		else
 			mpm.start_routine = serv_handler;
 
-		if ((mproc_serv_param.flag & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD) {
+		if ((mproc_serv_param.flags & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD) {
 			mpm.start_thread_sync_mutex((void*)&mproc_serv_param);
 		} else {
 			mproc_serv_param.mlock = NULL;
@@ -297,7 +331,7 @@ local_service::start_server(void* param)
 
 	DBG("End of service");
 
-	if((mparam->flag & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD)
+	if((mparam->flags & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD)
 	{
 		sigemptyset(&act.sa_mask);
 		sigaddset(&act.sa_mask, SIGPIPE);
@@ -318,15 +352,16 @@ local_service::start_local_client(void* param)
 		return -EINVAL;
 	}
 
-	if ( (mparam->flag & FLAG_WITH_IP) == FLAG_WITH_IP)
+	if ( (mparam->flags & FLAG_WITH_IP) == FLAG_WITH_IP)
 		setup_ip_client(mparam);
 	else
-		setup_client();
+		setup_client(mparam);
 
 	start_client(mparam);
 
+	// mparam->flags |= FLAG_BLOCK;
 	// Unlock mlock from parent thread creater process_manager
-	if (((mparam->flag & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX) && (mparam->mlock != NULL)) {
+	if (((mparam->flags & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX) && (mparam->mlock != NULL)) {
 		logd("[mutex] unlock prarent thread <%s:%d>", __FUNCTION__,__LINE__);
 		pthread_mutex_unlock(mparam->mlock);
 	}
@@ -339,34 +374,32 @@ local_service::setup_ip_client(void* param)
 {
 	int len;
 	int ret;
-	char ip_str[MAXLEN];
+	char ip_val[MAXLEN];
 	int port;
 
-	serv_param *mserv_param;
+	serv_param *mserv_param = NULL;
 	process_param *mparam = (process_param*)param;
 
-	if (mparam == NULL) {
-		loge("param is NULL, abort!");
-		return -EINVAL;
+	if (mparam != NULL) {
+		mserv_param = (serv_param*)mparam->serv;
 	}
-	mserv_param = (serv_param*)mparam->serv;
 
-	memset(ip_str, 0x0,sizeof(ip_str));
-	sprintf(ip_str, "%s", "127.0.0.1");
+	memset(ip_val, 0x0,sizeof(ip_val));
+	sprintf(ip_val, "%s", "127.0.0.1");
 	port = 8000;
 
 	if (mserv_param != NULL) {
-		if (strlen(mserv_param->ip_str) > 0)
-			sprintf(ip_str, "%s", mserv_param->ip_str);
+		if (strlen(mserv_param->socket_path) > 0)
+			sprintf(ip_val, "%s", mserv_param->socket_path);
 		if (mserv_param->port > 0)
 			port = mserv_param->port;
 	}
 
-	DBG("Client connect ---> %s:%d <---", ip_str, port);
+	DBG("Client connect ---< %s:%d >---", ip_val, port);
 
 	memset(&client_ip_addr,0,sizeof(client_ip_addr));
 	client_ip_addr.sin_family=AF_INET;
-	client_ip_addr.sin_addr.s_addr=inet_addr(ip_str);
+	client_ip_addr.sin_addr.s_addr=inet_addr(ip_val);
 	client_ip_addr.sin_port=htons(port);
 
 
@@ -376,9 +409,6 @@ local_service::setup_ip_client(void* param)
 		exit(EXIT_FAILURE);
 	}
 
-
-
-	DBG("connect to server: %s", "");
 	ret = connect(clientfd,(struct sockaddr *)&client_ip_addr,sizeof(struct sockaddr));
 	if (ret < 0) {
 		loge ("fail to connect");
@@ -389,10 +419,29 @@ local_service::setup_ip_client(void* param)
 }
 
 int
-local_service::setup_client(void)
+local_service::setup_client(void* param)
 {
 	int len;
 	int ret;
+	char server_name[MAXLEN];
+
+	serv_param *mserv_param = NULL;
+	process_param *mparam = (process_param*)param;
+
+	memset(server_name, 0x0, sizeof(server_name));
+	sprintf(server_name, "%s", SOCKET_SERVER_NAME);
+
+	if (mparam != NULL) {
+		loge("param is not NULL!");
+		mserv_param = (serv_param*)mparam->serv;
+	}
+
+	if (mserv_param != NULL) {
+		if (strlen(mserv_param->socket_path) > 0) {
+			memset(server_name, 0x0, sizeof(server_name));
+			sprintf(server_name, "%s", mserv_param->socket_path);
+		}
+	}
 
 	if ((clientfd = socket(AF_LOCAL, SOCK_STREAM, 0)) == -1) {
 		loge("fail to open socket");
@@ -402,7 +451,8 @@ local_service::setup_client(void)
 	clipid = getpid();
 
 	clientaddr.sun_family = AF_UNIX;
-	strncpy(clientaddr.sun_path, SOCKET_SERVER_NAME, sizeof(clientaddr.sun_path)-1);
+
+	strncpy(clientaddr.sun_path, server_name, sizeof(clientaddr.sun_path)-1);
 	len = sizeof(clientaddr);
 
 	DBG("Client connect ---> %s <---", clientaddr.sun_path);
@@ -432,7 +482,7 @@ local_service::start_client(void* param)
 	process_manager mpm;
 	serv_param mserv;
 
-	logd("Enter: %s", __FUNCTION__);
+	DBG("Enter: %s", __FUNCTION__);
 	if (mparam == NULL) {
 		loge("param is NULL, abort!");
 		return -EINVAL;
@@ -442,7 +492,8 @@ local_service::start_client(void* param)
 		mproc_cli_param.listenfd = clientfd;
 		mproc_cli_param.ppid     = clipid;
 		mproc_cli_param.mlock    = mpm.get_thread_mutex();
-		mproc_cli_param.flag     = mparam->flag; // | FLAG_BLOCK;
+		mproc_cli_param.flags    = mparam->flags; // | FLAG_BLOCK;
+		// mproc_cli_param.flags    = mparam->flags | FLAG_BLOCK;
 		mproc_cli_param.param    = cli_handler_param;
 		mproc_cli_param.serv     = mparam->serv;
 		memset(mproc_cli_param.cmd, 0x0, sizeof(mproc_cli_param.cmd));
@@ -450,12 +501,24 @@ local_service::start_client(void* param)
 
 		pipe(mproc_cli_param.pipefd);
 
-		if (cli_handler_callback != NULL)
+		if (cli_handler_callback != NULL) {
 			mpm.start_routine = cli_handler_callback;
-		else
+		} else {
 			mpm.start_routine = cli_handler;
+		}
 
-		if ((mproc_cli_param.flag & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD) {
+#if 0
+		memset(ch_recv, 0x0, sizeof(ch_recv));
+		sprintf(ch_recv, "%s", "james_debug_msg");
+		write(clientfd , ch_recv, strlen(ch_recv));
+#endif
+		DBG("client fd: %d", clientfd);
+
+		if ((mproc_cli_param.flags & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD) {
+			if (cli_handler_param == NULL) {
+				DBG("cli_handler_param is null");
+			}
+			DBG("cli_param fd: %d", mproc_cli_param.listenfd);
 			mpm.start_thread_sync_mutex((void*)&mproc_cli_param);
 		} else {
 			mproc_cli_param.mlock = NULL;

@@ -22,7 +22,7 @@
 
 #include <basic.h>
 #include <process_manager.h>
-#include <manager_service.h>
+#include <service_manager.h>
 #include <manager_client.h>
 #include <misc_utils.h>
 
@@ -53,8 +53,8 @@ public:
 
 private:
 	static int process_message(char*, char**);
-	int setup_server(void);
-	int setup_client(void);
+	int setup_server(void*);
+	int setup_client(void*);
 	int setup_ip_server(void*);
 	int setup_ip_client(void*);
 

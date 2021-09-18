@@ -88,7 +88,7 @@ network_manager::manager_network_status(void* param)
 	DBG("fd_event: %d, msockfd: %d, fd_max: %d", fd_event, msockfd, fd_max);
 
 	if (mparam != NULL) {
-		if ((mparam->flag & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX) {
+		if ((mparam->flags & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX) {
 			DBG("thread unlock.");
 			pthread_mutex_unlock(mparam->mlock);
 		}

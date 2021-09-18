@@ -64,6 +64,10 @@
 
 #include <config.h>
 
+#ifdef CONFIG_LIB_SRVMGR
+#include <service_manager.h>
+#endif
+
 #include "custbaud.h"
 
 struct misc_msg_t {
@@ -1641,18 +1645,6 @@ loop(void)
 					writen_ni(misc_msg.rd_fd[1], buff_rd, n);
 				}
 #endif
-#if 0
-				if (misc_msg.fd > 0)
-				{
-					char *msg_buf;
-
-					msg_buf = (char*)malloc(n+128);
-					memset(msg_buf, 0x0, n+128);
-					sprintf(msg_buf, "[james_st]%s[james_end]", buff_rd);
-					writen_ni(misc_msg.fd, msg_buf, n+strlen("[james_st][james_end]"));
-					free(msg_buf);
-				}
-#endif
                 for (i = 0; i < n; i++) {
                     bmp += do_map(bmp, opts.imap, buff_rd[i]);
                 }
@@ -2116,8 +2108,9 @@ parse_args(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    if ( opts.quiet )
+    if ( opts.quiet ) {
         return;
+	}
 
 #ifndef NO_HELP
     printf("ppcom v%s\n", VERSION);
@@ -2234,13 +2227,15 @@ main (int argc, char *argv[])
         log_fd = open(opts.log_filename,
                       O_CREAT | O_RDWR | O_APPEND,
                       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-        if (log_fd < 0)
+        if (log_fd < 0) {
             fatal("cannot open %s: %s", opts.log_filename, strerror(errno));
+		}
     }
 
     tty_fd = open(opts.port, O_RDWR | O_NONBLOCK | O_NOCTTY);
-    if (tty_fd < 0)
+    if (tty_fd < 0) {
         fatal("cannot open %s: %s", opts.port, strerror(errno));
+	}
 
 #ifdef USE_FLOCK
     if ( ! opts.nolock ) {
@@ -2343,6 +2338,30 @@ main (int argc, char *argv[])
 #endif
     pinfo("Terminal ready\r\n");
 
+#ifdef CONFIG_LIB_SRVMGR
+	// service_manager mgr_serv;
+	process_manager procmgr;
+
+	process_param m_procparam;
+	serv_param m_servparam;
+
+	// m_servparam.port = 8112;
+	memset(m_servparam.socket_path, 0x0, sizeof(m_servparam.socket_path));
+
+	// mgr_serv.set_service_type(MGR_SERVICE_SERV);
+	// m_servparam.serv_cls = &mgr_serv;
+
+	m_procparam.flags = FLAG_WITH_PTHREAD;
+	// m_procparam.flags |= FLAG_WITH_IP;
+	// m_procparam.flags |= FLAG_BLOCK;
+	m_procparam.serv = &m_servparam;
+
+	procmgr.start_routine=start_service_manager_proc;
+	procmgr.start_thread(&m_procparam);
+	// register_serv_handler(void *(*proc_func)(void* param), void* param)
+	logd("============== start_service_manager_proc <done> =================");
+
+#endif
     /* Enter main processing loop */
     ler = loop();
 

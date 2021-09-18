@@ -87,14 +87,17 @@ process_manager::start_thread(void* param)
 
 	pthread_create(&mpth_id, NULL, start_routine, param);
 
-	if ((mparam != NULL) && (mparam->flag & FLAG_SYNC_MUTEX) != FLAG_SYNC_MUTEX) {
+	if ((mparam != NULL) && (mparam->flags & FLAG_SYNC_MUTEX) != FLAG_SYNC_MUTEX) {
+		pthread_mutex_unlock(&mlock);
+		pthread_mutex_lock(&mlock);
+	}
+
+	if (mparam != NULL) {
 		pthread_mutex_unlock(&mlock);
 	}
 
-	pthread_mutex_lock(&mlock);
-	pthread_mutex_unlock(&mlock);
-
-	if ((mparam->flag & FLAG_BLOCK) == FLAG_BLOCK) {
+	if ((mparam->flags & FLAG_BLOCK) == FLAG_BLOCK) {
+		logd("start_thread with block");
 		pthread_join(mpth_id, &ret_param);
 	}
 
@@ -107,7 +110,7 @@ process_manager::start_thread_sync_mutex(void* param)
 	int ret;
 
 	process_param *mparam = (process_param*)param;
-	mparam->flag |= FLAG_SYNC_MUTEX;
+	mparam->flags |= FLAG_SYNC_MUTEX;
 	ret = start_thread(param);
 	return ret;
 }

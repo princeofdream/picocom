@@ -3,6 +3,9 @@ SUBDIRS += ppcom
 
 AM_CFLAGS = -I${top_srcdir}/src/include
 AM_CFLAGS += -I${top_srcdir}/src/libsrvmgr/include
+AM_CFLAGS += -g
+
+AM_CXXFLAGS = ${AM_CFLAGS}
 
 distclean-local:
 	-rm -rf compile missing config.guess
