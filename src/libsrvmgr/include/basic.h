@@ -92,9 +92,9 @@
 // #define loge(frm,args...) ALOGE(frm,##args)
 // #define logd(frm,args...) ALOGD("--<%s:%d>---" frm "---\n",__FUNCTION__,__LINE__,##args)
 // #else
-#define DBG(frm,args...) printf("[ %s:%d ]\t---" frm "\n",__FILE__,__LINE__,##args)
-#define loge(frm,args...) printf("[ %s:%d ]\t---" frm "\n",__FILE__,__LINE__,##args)
-#define logd(frm,args...) printf("[ %s:%d ]\t---" frm "\n",__FILE__,__LINE__,##args)
+#define DBG(frm,args...) printf("[ %s:%d ]\t---" frm "\r\n",__FILE__,__LINE__,##args)
+#define loge(frm,args...) printf("[ %s:%d ]\t---" frm "\r\n",__FILE__,__LINE__,##args)
+#define logd(frm,args...) printf("[ %s:%d ]\t---" frm "\r\n",__FILE__,__LINE__,##args)
 // #endif
 // #else
 // #ifdef ANDROID

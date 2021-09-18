@@ -50,7 +50,6 @@ messages_manager::serv_proc_messages(message_param *param)
 		return NULL;
 	}
 
-	// logd("%s:%d, %#x", __FILE__,__LINE__, &mserv_param);
 	mserv_param.sockfd = mserv_msg->sockfd;
 	mserv_param.value  = mserv_msg->value;
 	mserv_param.msg    = mserv_msg->msg;
@@ -78,12 +77,14 @@ messages_manager::serv_cmd_handler(message_param *param)
 	// if (msg_param->sub_param == NULL)
 	//     loge("custon param is NULL");
 
-	memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
-	if (strcmp(msg_param->msg, "ack") == 0) {
+	if (strcmp(msg_param->cmd, "ack") == 0) {
+		memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
 		sprintf(msg_param->cmd, "%s %s", msg_param->cmd, "ok");
-	} else if (strcmp(msg_param->msg, "quit") == 0) {
+	} else if (strcmp(msg_param->cmd, "quit") == 0) {
+		memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
 		sprintf(msg_param->cmd, "%s %s", msg_param->cmd, "QUIT");
 	} else {
+		memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
 		sprintf(msg_param->cmd, "%s %s", msg_param->cmd, "NG");
 	}
 
@@ -102,8 +103,8 @@ messages_manager::cli_cmd_handler(message_param *param)
 	// if (msg_param->sub_param == NULL)
 	//     loge("custon param is NULL");
 
-	memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
-	if (strcasecmp(msg_param->msg, "quit QUIT") == 0) {
+	if (strcasecmp(msg_param->cmd, "quit QUIT") == 0) {
+		memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
 		sprintf(msg_param->cmd, "%s", "quit");
 	}
 
