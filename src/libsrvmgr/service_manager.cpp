@@ -64,7 +64,7 @@ start_service_manager_proc(void* param)
 		mserv_param->serv_cls = srvmgr;
 
 	mproc_param.mlock = mparam->mlock;
-	mproc_param.flags  = mparam->flags;
+	mproc_param.flags = mparam->flags;
 	mproc_param.serv  = mserv_param;
 	mproc_param.param = mparam->param;
 
@@ -74,12 +74,13 @@ start_service_manager_proc(void* param)
 	memset(mproc_param.cmd, 0x0, sizeof(mproc_param.cmd));
 	sprintf(mproc_param.cmd, "%s", mparam->cmd);
 
-	if (srvmgr->service_type == MGR_SERVICE_SERV)
+	if (srvmgr->service_type == MGR_SERVICE_SERV) {
 		srvmgr->start_manager_server(&mproc_param);
-	else if (srvmgr->service_type == MGR_SERVICE_CLI)
+	} else if (srvmgr->service_type == MGR_SERVICE_CLI) {
 		srvmgr->start_manager_client(&mproc_param);
-	else
+	} else {
 		log("service type incorrect, Do not start manager service.\n");
+	}
 
 	logd("==== service done, quit... ====");
 	if((mparam->serv != NULL) && (mserv_param->serv_cls == NULL) && (srvmgr != NULL)) {
@@ -366,7 +367,10 @@ service_manager::start_manager_server(void* param)
 		return -EINVAL;
 	}
 
-	ml_serv.register_serv_handler(service_manager_serv_handler, param);
+	if ((mproc_param->flags & FLAG_BLOCK) != FLAG_BLOCK) {
+		mproc_param->flags |= FLAG_BLOCK;
+	}
+	ml_serv.register_serv_handler(service_manager_serv_handler, mproc_param->param);
 	ml_serv.start_local_service(mproc_param);
 
 	return 0;
