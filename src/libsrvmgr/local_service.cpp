@@ -295,7 +295,7 @@ local_service::start_server(void* param)
 		mproc_serv_param.servfd    = servfd;
 		mproc_serv_param.ppid      = servpid;
 		mproc_serv_param.mlock     = mpm.get_thread_mutex();
-		mproc_serv_param.param     = serv_handler_param;
+		mproc_serv_param.sub_param = serv_handler_param;
 		mproc_serv_param.serv      = mparam->serv;
 		// mproc_serv_param.flags      = FLAG_WITH_PROCESS;
 		mproc_serv_param.flags      = FLAG_WITH_PTHREAD;
@@ -489,13 +489,12 @@ local_service::start_client(void* param)
 	}
 
 	// for client param
-		mproc_cli_param.listenfd = clientfd;
-		mproc_cli_param.ppid     = clipid;
-		mproc_cli_param.mlock    = mpm.get_thread_mutex();
-		mproc_cli_param.flags    = mparam->flags; // | FLAG_BLOCK;
-		// mproc_cli_param.flags    = mparam->flags | FLAG_BLOCK;
-		mproc_cli_param.param    = cli_handler_param;
-		mproc_cli_param.serv     = mparam->serv;
+		mproc_cli_param.listenfd  = clientfd;
+		mproc_cli_param.ppid      = clipid;
+		mproc_cli_param.mlock     = mpm.get_thread_mutex();
+		mproc_cli_param.flags     = mparam->flags; // | FLAG_BLOCK;
+		mproc_cli_param.sub_param = cli_handler_param;
+		mproc_cli_param.serv      = mparam->serv;
 		memset(mproc_cli_param.cmd, 0x0, sizeof(mproc_cli_param.cmd));
 		sprintf(mproc_cli_param.cmd, "%s", mparam->cmd);
 

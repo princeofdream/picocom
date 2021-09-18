@@ -66,7 +66,7 @@ start_service_manager_proc(void* param)
 	mproc_param.mlock = mparam->mlock;
 	mproc_param.flags = mparam->flags;
 	mproc_param.serv  = mserv_param;
-	mproc_param.param = mparam->param;
+	mproc_param.sub_param = mparam->sub_param;
 
 	// misc_utils mmisc;
 	// mmisc.flag_to_string(mproc_param.flags, __func__);
@@ -113,15 +113,15 @@ start_manager_client_proc(void* param)
 		mcli = new service_manager();
 	}
 
-	if (mparam->param != NULL)
-		req_msg_param = (message_param*)mparam->param;
+	if (mparam->sub_param != NULL)
+		req_msg_param = (message_param*)mparam->sub_param;
 	else
 		req_msg_param = new message_param;
 
 	mfd = dup(mparam->listenfd);
 
 	req_msg_param->sockfd = mfd;
-	req_msg_param->param = mcli->req_cli_param;
+	req_msg_param->sub_param = mcli->req_cli_param;
 
 	if (strlen(req_msg_param->cmd) == 0) {
 		memset(req_msg_param->cmd, 0x0, sizeof(req_msg_param->cmd));
@@ -151,7 +151,7 @@ start_manager_client_proc(void* param)
 		mcli = NULL;
 	}
 
-	if ((mparam->param == NULL) && (req_msg_param != NULL)) {
+	if ((mparam->sub_param == NULL) && (req_msg_param != NULL)) {
 		delete req_msg_param;
 		req_msg_param = NULL;
 	}
@@ -182,7 +182,7 @@ start_manager_client_recv_proc(void* param)
 	mfd = dup(mparam->listenfd);
 
 	recv_param.sockfd = mfd;
-	recv_param.param = mcli->req_cli_param;
+	recv_param.sub_param = mcli->req_cli_param;
 	memset(recv_param.cmd, 0x0, sizeof(recv_param.cmd));
 
 	if (((mparam->flags & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX) && (mparam->mlock != NULL)) {
@@ -234,8 +234,8 @@ service_manager_serv_handler(void* param)
 		mserv = new service_manager();
 	}
 
-	if (mproc_param->param != NULL)
-		msg_param = (message_param*)mproc_param->param;
+	if (mproc_param->sub_param != NULL)
+		msg_param = (message_param*)mproc_param->sub_param;
 	else
 		msg_param = new message_param();
 
@@ -244,7 +244,7 @@ service_manager_serv_handler(void* param)
 	close(mproc_param->listenfd);
 
 	msg_param->sockfd = mfd;
-	msg_param->param = NULL;
+	msg_param->sub_param = NULL;
 	memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
 
 	// Unlock mlock from parent thread creater process_manager
@@ -273,7 +273,7 @@ service_manager_serv_handler(void* param)
 
 	close(mfd);
 
-	if (mproc_param->param == NULL) {
+	if (mproc_param->sub_param == NULL) {
 		delete msg_param;
 		msg_param = NULL;
 	}
@@ -316,15 +316,15 @@ service_manager_cli_handler(void* param)
 	mfd = dup(mproc_param->listenfd);
 
 	// set message param
-	if (mproc_param->param != NULL) {
-		msg_param = (message_param*)mproc_param->param;
+	if (mproc_param->sub_param != NULL) {
+		msg_param = (message_param*)mproc_param->sub_param;
 		logd("get message from prarm, cmd: %s", msg_param->cmd);
 	} else {
 		logd("new message");
 		msg_param = new message_param();
 	}
 	msg_param->sockfd = mfd;
-	msg_param->param = NULL;
+	msg_param->sub_param = NULL;
 
 	// Unlock mlock from parent thread creater process_manager
 	if (mproc_param->mlock != NULL)
@@ -348,7 +348,7 @@ service_manager_cli_handler(void* param)
 	close(mfd);
 	close(mproc_param->listenfd);
 
-	if ((mproc_param->param == NULL) && (msg_param != NULL)) {
+	if ((mproc_param->sub_param == NULL) && (msg_param != NULL)) {
 		delete msg_param;
 		msg_param = NULL;
 	}
@@ -370,7 +370,7 @@ service_manager::start_manager_server(void* param)
 	if ((mproc_param->flags & FLAG_BLOCK) != FLAG_BLOCK) {
 		mproc_param->flags |= FLAG_BLOCK;
 	}
-	ml_serv.register_serv_handler(service_manager_serv_handler, mproc_param->param);
+	ml_serv.register_serv_handler(service_manager_serv_handler, mproc_param->sub_param);
 	ml_serv.start_local_service(mproc_param);
 
 	return 0;
@@ -387,14 +387,14 @@ service_manager::start_manager_client(void* param)
 		return -EINVAL;
 	}
 
-	if (mproc_param->param == NULL) {
+	if (mproc_param->sub_param == NULL) {
 		DBG("param is null");
 	}
 
 	if ((mproc_param->flags & FLAG_BLOCK) != FLAG_BLOCK) {
 		mproc_param->flags |= FLAG_BLOCK;
 	}
-	ml_serv.register_cli_handler(service_manager_cli_handler, mproc_param->param);
+	ml_serv.register_cli_handler(service_manager_cli_handler, mproc_param->sub_param);
 	ml_serv.start_local_client(mproc_param);
 	mproc_param->listenfd = ml_serv.get_client_fd();
 	DBG("start_manager_client done");
@@ -421,7 +421,7 @@ service_manager::start_manager_client_recv_pthread(message_param *msg_param)
 	mproc_recv_param.flags     = FLAG_WITH_PTHREAD;
 	mproc_recv_param.flags    |= FLAG_SYNC_MUTEX;
 	mproc_recv_param.serv     = &mserv_param;
-	mproc_recv_param.param    = (void*)&msg_param;
+	mproc_recv_param.sub_param    = (void*)&msg_param;
 
 	mproc_recv.start_routine = start_manager_client_recv_proc;
 	mproc_recv.start_thread_sync_mutex((void*)&mproc_recv_param);
@@ -441,13 +441,13 @@ service_manager::start_manager_client_send_pthread(message_param *msg_param)
 
 	mserv_param.serv_cls = this;
 
-	mproc_send_param.listenfd = msg_param->sockfd;
-	mproc_send_param.mlock    = mproc_send.get_thread_mutex();
-	mproc_send_param.flags    |= FLAG_WITH_PTHREAD;
-	mproc_send_param.flags    |= FLAG_SYNC_MUTEX;
-	mproc_send_param.flags    |= FLAG_BLOCK;
-	mproc_send_param.serv     = &mserv_param;
-	mproc_send_param.param    = (void*)msg_param;
+	mproc_send_param.listenfd   = msg_param->sockfd;
+	mproc_send_param.mlock      = mproc_send.get_thread_mutex();
+	mproc_send_param.flags     |= FLAG_WITH_PTHREAD;
+	mproc_send_param.flags     |= FLAG_SYNC_MUTEX;
+	mproc_send_param.flags     |= FLAG_BLOCK;
+	mproc_send_param.serv       = &mserv_param;
+	mproc_send_param.sub_param  = (void*)msg_param;
 
 	mproc_send.start_routine = start_manager_client_proc;
 	mproc_send.start_thread_sync_mutex((void*)&mproc_send_param);
@@ -504,7 +504,7 @@ service_manager::respond_cmd_async(int sockfd, void* param)
 			message_param mserv_msg;
 
 			mserv_msg.sockfd = sockfd;
-			mserv_msg.param = param;
+			mserv_msg.sub_param = param;
 			memset(mserv_msg.cmd, 0x0, sizeof(mserv_msg.cmd));
 			rlen = read(mserv_msg.sockfd, mserv_msg.cmd, sizeof(mserv_msg.cmd) - 1);
 			logd("[%s:%d] get msg<%d>, len:[%d] : %s", __func__,__LINE__,i0, rlen, mserv_msg.cmd);
@@ -558,7 +558,7 @@ service_manager::respond_cmd(int sockfd, void* param)
 		message_param mserv_msg;
 
 		mserv_msg.sockfd = sockfd;
-		mserv_msg.param = param;
+		mserv_msg.sub_param = param;
 		memset(mserv_msg.cmd, 0x0, sizeof(mserv_msg.cmd));
 		rlen = read(mserv_msg.sockfd, mserv_msg.cmd, sizeof(mserv_msg.cmd) - 1);
 		logd("get msg<%d>, len:[%d] : %s", i0, rlen, mserv_msg.cmd);
@@ -640,7 +640,7 @@ service_manager::recv_message_async(message_param *param)
 				if (strcasecmp(msg_ret->cmd, "quit") == 0) {
 					logd("%s get msg: %s, abort", __func__, msg_ret->cmd);
 					break;
-				// } else if (msg_ret.param == NULL) {
+				// } else if (msg_ret.sub_param == NULL) {
 				//     logd("%s get null param, abort")
 				//     break;
 				// } else {

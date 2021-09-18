@@ -128,7 +128,7 @@ typedef struct process_param_t {
 	pthread_mutex_t	*mlock;
 	char			cmd[1024];
 	serv_param		*serv;
-	void			*param;
+	void			*sub_param;
 	int				pipefd[2];
 } process_param;
 
@@ -139,7 +139,7 @@ typedef struct message_param_t {
 	uint32_t	flags;
 	char		cmd[1024];
 	char		**value;
-	void		*param;
+	void		*sub_param;
 	char		*msg;
 	int			result;
 } message_param;

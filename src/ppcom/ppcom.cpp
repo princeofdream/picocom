@@ -2352,11 +2352,11 @@ main (int argc, char *argv[])
 	// m_servparam.serv_cls = &mgr_serv;
 	m_servparam.serv_cls = NULL;
 
-	m_procparam.flags = FLAG_WITH_PTHREAD;
-	// m_procparam.flags |= FLAG_WITH_IP;
-	// m_procparam.flags |= FLAG_BLOCK;
-	m_procparam.serv = &m_servparam;
-	m_procparam.param = NULL;
+	m_procparam.flags     = FLAG_WITH_PTHREAD;
+	// m_procparam.flags    |= FLAG_WITH_IP;
+	// m_procparam.flags    |= FLAG_BLOCK;
+	m_procparam.serv      = &m_servparam;
+	m_procparam.sub_param = NULL;
 
 	procmgr.start_routine=start_service_manager_proc;
 	procmgr.start_thread(&m_procparam);
