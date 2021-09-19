@@ -164,10 +164,12 @@ start_manager_client_recv_proc(void* param)
 {
 	int mfd = -1;
 	netlink_event mevent;
-	process_param *mparam = (process_param*)param;
+	process_param *mparam;
 	service_manager *mcli = NULL;
 	message_param recv_param;
 
+	mparam = (process_param*)malloc(sizeof(process_param));
+	memcpy(mparam, param, sizeof(process_param));
 	if (mparam == NULL) {
 		loge("%s param is null, abort!", __FUNCTION__);
 		return (void*)NULL;
@@ -198,6 +200,7 @@ start_manager_client_recv_proc(void* param)
 	mcli->recv_message_async(&recv_param);
 
 	close(mfd);
+	free(mparam);
 
 	if ((mparam->serv == NULL) && (mcli != NULL)) {
 		delete(mcli);
@@ -508,7 +511,7 @@ service_manager::respond_cmd_async(int sockfd, void* param)
 			mserv_msg.sub_param = param;
 			memset(mserv_msg.cmd, 0x0, sizeof(mserv_msg.cmd));
 			rlen = read(mserv_msg.sockfd, mserv_msg.cmd, sizeof(mserv_msg.cmd) - 1);
-			logd("[%s:%d] get msg<%d>, len:[%d] : %s", __func__,__LINE__,i0, rlen, mserv_msg.cmd);
+			logd("get msg<%d>, len:[%d] : %s",i0, rlen, mserv_msg.cmd);
 
 			if(rlen <= 0 && sel_ret == 1) {
 				loge("socket closed!, rlen: %d, ret: %d", rlen, sel_ret);
@@ -518,7 +521,7 @@ service_manager::respond_cmd_async(int sockfd, void* param)
 			mmsg.serv_proc_messages(&mserv_msg);
 
 			wlen = write(mserv_msg.sockfd, mserv_msg.cmd, strlen(mserv_msg.cmd) + 1);
-			logd("[%s:%d] send msg<%d>, len:[%d] : %s", __func__, __LINE__, i0, wlen, mserv_msg.cmd);
+			logd("send msg<%d>, len:[%d] : %s", i0, wlen, mserv_msg.cmd);
 
 			if(strcasecmp(mserv_msg.cmd, "quit QUIT") == 0) {
 				logd("quit this process");
@@ -554,10 +557,11 @@ service_manager::respond_cmd(int sockfd, void* param)
 	int rlen;
 	int wlen;
 
+	message_param mserv_msg;
+	mmsg.set_msg_serv_param(&mserv_msg);
+
 	i0 = 0;
 	while(true) {
-		message_param mserv_msg;
-
 		mserv_msg.sockfd = sockfd;
 		mserv_msg.sub_param = param;
 		memset(mserv_msg.cmd, 0x0, sizeof(mserv_msg.cmd));
@@ -572,7 +576,7 @@ service_manager::respond_cmd(int sockfd, void* param)
 		mmsg.serv_proc_messages(&mserv_msg);
 
 		wlen = write(mserv_msg.sockfd, mserv_msg.cmd, strlen(mserv_msg.cmd) + 1);
-		logd("%s:%d send msg<%d>, len:[%d] : %s", __func__, __LINE__, i0, wlen, mserv_msg.cmd);
+		logd("send msg<%d>, len:[%d] : %s", i0, wlen, mserv_msg.cmd);
 
 		if(strcasecmp(mserv_msg.cmd, "quit QUIT") == 0) {
 			logd("quit this process");
@@ -723,7 +727,7 @@ service_manager::send_request_cmd_once(message_param *param)
 }
 
 int
-service_manager::register_cli_send_msg_callback(void *(*proc_func)(void* param), void *param)
+service_manager::register_cli_send_msg_callback(void *(*proc_func)(message_param* param), message_param *param)
 {
 	cli_send_msg_callback = proc_func;
 	req_cli_param = param;
@@ -731,14 +735,14 @@ service_manager::register_cli_send_msg_callback(void *(*proc_func)(void* param),
 }
 
 int
-service_manager::register_serv_msg_callback(void *(*proc_func)(void* param), void *param)
+service_manager::register_serv_msg_callback(void *(*proc_func)(message_param* param), message_param *param)
 {
 	mmsg.register_serv_proc_callback(proc_func, param);
 	return 0;
 }
 
 int
-service_manager::register_cli_recv_msg_callback(void *(*proc_func)(void* param), void *param)
+service_manager::register_cli_recv_msg_callback(void *(*proc_func)(message_param* param), message_param *param)
 {
 	mmsg.register_cli_proc_callback(proc_func, param);
 	return 0;
@@ -784,3 +788,8 @@ service_manager::msg_handler(struct sockaddr_nl *nl, struct nlmsghdr *msg)
     return ret;
 }
 
+messages_manager *
+service_manager::get_message_manager_class(void)
+{
+	return &mmsg;
+}

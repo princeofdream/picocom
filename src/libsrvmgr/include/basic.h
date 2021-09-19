@@ -65,8 +65,8 @@
 #include <cutils/properties.h>
 #endif
 
-#define MAXLEN 1024
-#define READ_BUFFER_LEN 1024
+#define MAXLEN 4096
+#define READ_BUFFER_LEN 4096
 #define COMMON_LEN 64
 
 #undef LOG_TAG

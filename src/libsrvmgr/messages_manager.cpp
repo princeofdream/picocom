@@ -78,13 +78,10 @@ messages_manager::serv_cmd_handler(message_param *param)
 	//     loge("custon param is NULL");
 
 	if (strcmp(msg_param->cmd, "ack") == 0) {
-		memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
 		sprintf(msg_param->cmd, "%s %s", msg_param->cmd, "ok");
 	} else if (strcmp(msg_param->cmd, "quit") == 0) {
-		memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
 		sprintf(msg_param->cmd, "%s %s", msg_param->cmd, "QUIT");
 	} else {
-		memset(msg_param->cmd, 0x0, sizeof(msg_param->cmd));
 		sprintf(msg_param->cmd, "%s %s", msg_param->cmd, "NG");
 	}
 
@@ -145,7 +142,7 @@ messages_manager::cli_proc_messages(int sockfd, char* msg, char** value)
 }
 
 int
-messages_manager::register_serv_proc_callback(void *(*proc_func)(void* param), void *param)
+messages_manager::register_serv_proc_callback(void *(*proc_func)(message_param* param), message_param *param)
 {
 	serv_proc_callback = proc_func;
 	mserv_param.sub_param   = param;
@@ -153,7 +150,7 @@ messages_manager::register_serv_proc_callback(void *(*proc_func)(void* param), v
 }
 
 int
-messages_manager::register_cli_proc_callback(void *(*proc_func)(void* param), void *param)
+messages_manager::register_cli_proc_callback(void *(*proc_func)(message_param* param), message_param *param)
 {
 	cli_proc_callback = proc_func;
 	mcli_param.sub_param   = param;
@@ -178,4 +175,33 @@ messages_manager::dump_message_info(message_param *param)
 	logd("cmd: %s"    , param->cmd);
 	return;
 }
+
+message_param *
+messages_manager::get_msg_serv_param(void)
+{
+	return &mserv_param;
+}
+
+message_param *
+messages_manager::get_msg_cli_param(void)
+{
+	return &mcli_param;
+}
+
+void
+messages_manager::set_msg_serv_param(message_param *param)
+{
+	memcpy(&mcli_param, param, sizeof(message_param));
+	return ;
+}
+
+void
+messages_manager::set_msg_cli_param(message_param *param)
+{
+	memcpy(&mserv_param, param, sizeof(message_param));
+	return ;
+}
+
+
+
 

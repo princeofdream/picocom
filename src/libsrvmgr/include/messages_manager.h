@@ -31,17 +31,22 @@ public:
 
 	void* serv_proc_messages(message_param*);
 	void* cli_proc_messages(int, char*, char**);
-	int register_serv_proc_callback(void *(*proc_func)(void* param), void*);
-	int register_cli_proc_callback(void *(*proc_func)(void* param), void*);
+	int register_serv_proc_callback(void *(*proc_func)(message_param* param), message_param*);
+	int register_cli_proc_callback(void *(*proc_func)(message_param* param), message_param*);
 	void dump_message_info(message_param *param);
 	void* serv_cmd_handler(message_param *param);
 	void* cli_cmd_handler(message_param *param);
 
+	message_param *get_msg_serv_param(void);
+	message_param *get_msg_cli_param(void);
+	void set_msg_serv_param(message_param *);
+	void set_msg_cli_param(message_param *);
+
 private:
 	message_param mcli_param;
 	message_param mserv_param;
-	void *(*serv_proc_callback)(void* param);
-	void *(*cli_proc_callback)(void* param);
+	void *(*serv_proc_callback)(message_param* param);
+	void *(*cli_proc_callback)(message_param* param);
 
 };
 

@@ -58,19 +58,21 @@ public:
 	int start_manager_client_send_pthread(message_param*);
 public:
 	// over write serv message
-	int register_serv_msg_callback(void *(*proc_func)(void* param), void*);
+	int register_serv_msg_callback(void *(*proc_func)(message_param* param), message_param*);
 	// over write recv message
-	int register_cli_recv_msg_callback(void *(*proc_func)(void* param), void *);
+	int register_cli_recv_msg_callback(void *(*proc_func)(message_param* param), message_param*);
 	// over write send message
-	int register_cli_send_msg_callback(void *(*proc_func)(void* param), void *);
-
-	void *(*cli_send_msg_callback)(void* param);
+	int register_cli_send_msg_callback(void *(*proc_func)(message_param* param), message_param *);
+	void *(*cli_send_msg_callback)(message_param* param);
 	void *req_cli_param;
 
 	pthread_mutex_t sync_lock;
 	int cli_recv_ready;
 
 	int service_type;
+
+public:
+	messages_manager *get_message_manager_class(void);
 
 private:
 	messages_manager mmsg;
