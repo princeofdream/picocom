@@ -5,6 +5,9 @@ AM_CFLAGS = -I${top_srcdir}/src/include
 AM_CFLAGS += -I${top_srcdir}/src/libsrvmgr/include
 AM_CFLAGS += -g
 
+AM_LDFLAGS = -L../ppcom -Wl,-rpath=../ppcom
+AM_LDFLAGS += -L../../lib/ppcom -Wl,-rpath=../../lib/ppcom
+
 AM_CXXFLAGS = ${AM_CFLAGS}
 
 distclean-local:
