@@ -1,6 +1,4 @@
 
-VERSION = 3.2a
-
 #CC ?= gcc
 CPPFLAGS += -DVERSION_STR=\"$(VERSION)\"
 CFLAGS += -Wall -g
@@ -20,7 +18,7 @@ TTY_Q_SZ = 0
 CPPFLAGS += -DTTY_Q_SZ=$(TTY_Q_SZ)
 
 ## Comment this out to disable high-baudrate support
-CPPFLAGS += -DHIGH_BAUD -I../include -I../libsrvmgr/include
+CPPFLAGS += -DHIGH_BAUD -I./include -I../libprocmgr/include
 
 ## Normally you should NOT enable both: UUCP-style and flock(2)
 ## locking.
@@ -36,8 +34,8 @@ CPPFLAGS += -DUSE_FLOCK
 HISTFILE = .ppcom_history
 CPPFLAGS += -DHISTFILE=\"$(HISTFILE)\" \
 	    -DLINENOISE
-OBJS += linenoise.o
-linenoise.o : linenoise.cpp linenoise.h
+OBJS += src/linenoise.o
+linenoise.o : src/linenoise.cpp src/linenoise.h
 
 ## Comment this in to enable (force) custom baudrate support
 ## even on systems not enabled by default.
@@ -51,24 +49,24 @@ linenoise.o : linenoise.cpp linenoise.h
 #CPPFLAGS += -DNO_HELP
 
 OBJS += \
-		term.o \
-		fdio.o \
-		split.o \
-		custbaud.o \
-		termios2.o  \
-		custbaud_bsd.o \
-		log_server.o
+		src/term.o \
+		src/fdio.o \
+		src/split.o \
+		src/custbaud.o \
+		src/termios2.o  \
+		src/custbaud_bsd.o \
+		src/log_server.o
 
-PPCOM_OBJS = $(OBJS) ppcom.o
-PPCOM_CLI_OBJS = $(OBJS) ppcom_cli.o
+PPCOM_OBJS = $(OBJS) src/ppcom.o
+PPCOM_CLI_OBJS = $(OBJS) src/ppcom_cli.o
 
 ppcom : $(PPCOM_OBJS)
 	set -e;for i in $(OBJS); do $(CXX) $(CFLAGS) -c $(LDFLAGS) $$i;done
-	$(LD) $(LDFLAGS) -o $@ $(PPCOM_OBJS) $(LDLIBS) -L../libsrvmgr -Wl,-rpath=../libsrvmgr -lprocmgr
+	$(LD) $(LDFLAGS) -o $@ $(PPCOM_OBJS) $(LDLIBS) -L../libprocmgr -Wl,-rpath=../libprocmgr -lprocmgr
 
 ppcom_cli : $(PPCOM_CLI_OBJS)
 	set -e;for i in $(OBJS); do $(CXX) $(CFLAGS) -c $(LDFLAGS) $$i;done
-	$(LD) $(LDFLAGS) -o $@ $(PPCOM_CLI_OBJS) $(LDLIBS) -L../libsrvmgr -Wl,-rpath=../libsrvmgr -lprocmgr
+	$(LD) $(LDFLAGS) -o $@ $(PPCOM_CLI_OBJS) $(LDLIBS) -L../libprocmgr -Wl,-rpath=../libprocmgr -lprocmgr
 
 HEADERS = custbaud_bsd.h  custbaud.h  debug.h  fdio.h  log_server.h  split.h  termbits2.h  term.h  termios2.h
 
