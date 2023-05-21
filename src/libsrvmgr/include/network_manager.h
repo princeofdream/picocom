@@ -19,7 +19,7 @@
 #ifndef __NETWORK_MANAGER_HEADER__
 #define __NETWORK_MANAGER_HEADER__
 
-#include <basic.h>
+#include <procmgr_basic.h>
 #include <netlink_event.h>
 #include <network_utils.h>
 

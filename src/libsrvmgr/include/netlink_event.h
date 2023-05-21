@@ -20,7 +20,7 @@
 #ifndef __NETLINK_EVENT_HEADER__
 #define __NETLINK_EVENT_HEADER__
 
-#include <basic.h>
+#include <procmgr_basic.h>
 
 class netlink_event
 {

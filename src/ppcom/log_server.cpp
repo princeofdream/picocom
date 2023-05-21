@@ -18,7 +18,7 @@
 
 
 #include <log_server.h>
-#ifdef CONFIG_LIB_SRVMGR
+#if 1 //def CONFIG_LIB_SRVMGR
 
 serv_param m_servparam;
 process_param m_procparam;

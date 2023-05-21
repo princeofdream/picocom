@@ -20,7 +20,7 @@
 #ifndef __MESSAGE_MANAGER_HEADER__
 #define __MESSAGE_MANAGER_HEADER__
 
-#include <basic.h>
+#include <procmgr_basic.h>
 
 class messages_manager
 {

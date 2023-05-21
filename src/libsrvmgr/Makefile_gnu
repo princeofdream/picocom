@@ -1,0 +1,91 @@
+
+# CROSS_COMPILE = arm-linux-androideabi-
+# CROSS_COMPILE   = arm-linux-gnueabihf-
+REF_TOOLCHAIN   = arm-linux-gnueabihf-
+
+CC              = $(CROSS_COMPILE)gcc
+CXX             = $(CROSS_COMPILE)g++
+
+CONFIG_USE_NETFILTER ?= true
+
+CFLAGS          = -pie -fPIC -I. -L.
+CFLAGS         += -Wno-unused-but-set-variable
+CFLAGS         += -lstdc++
+CFLAGS         += -Wall -g -O2
+CFLAGS         += -I./include
+
+ifeq (${CONFIG_USE_NETFILTER}, true)
+CFLAGS         += -DCONFIG_USE_NETFILTER
+LDFLAGS        += -lnetfilter_conntrack
+endif
+
+ifeq (${CROSS_COMPILE}, ${REF_TOOLCHAIN})
+	LDFLAGS        += -Larm-linux-gnueabihf -Wl,-rpath=arm-linux-gnueabihf
+	LDFLAGS        += -lrt -lpthread
+else
+	ifneq (${CROSS_COMPILE}, )
+		LDFLAGS         += -Larm-linux-androideabi -Wl,-rpath=arm-linux-androideabi
+	endif
+endif
+
+ifneq (${CROSS_COMPILE}, )
+	CFLAGS       += -DCOMPILE_FOR_TARGET_BY_MAKEFILE
+else
+	LIBS          = -lrt -lpthread
+	CFLAGS       += -DCOMPILE_FOR_HOST
+	LDFLAGS      += -lrt -lpthread
+	LDFLAGS      += -L. -Wl,-rpath=.
+	# LDFLAGS      += -L$(HOME)/Environment/env_rootfs -Wl,-rpath=$(HOME)/Environment/env_rootfs
+	LDFLAGS      += -L./serial_lib/ -Wl,-rpath=./serial_lib/
+endif
+
+
+CFLAGS += $(GLOBLE_CFLAG)
+LDFLAGS += $(GLOBLE_LDFLAG)
+
+LDFLAGS		+= -shared
+LDFLAGS      += -L../libsrvmgr -Wl,-rpath=../libsrvmgr
+LDFLAGS		+= -lprocmgr
+CXXFLAGS	= $(CFLAGS)
+
+HEADER := include/procmgr_basic.h
+HEADER += include/messages_manager.h \
+		  include/network_filter.h \
+		  include/process_manager.h \
+		  include/local_service.h \
+		  include/misc_utils.h \
+		  include/network_manager.h \
+		  include/service_manager.h \
+		  include/manager_client.h \
+		  include/netlink_event.h \
+		  include/network_utils.h
+
+procmgr_objs += \
+			src/local_service.o \
+			src/netlink_event.o \
+			src/network_utils.o \
+			src/messages_manager.o \
+			src/network_filter.o \
+			src/process_manager.o \
+			src/misc_utils.o \
+			src/network_manager.o \
+			src/service_manager.o \
+
+.PHONY: clean
+
+procmgr: $(procmgr_objs) $(HEADER)
+	set -e;for i in $(procmgr_objs); do $(CXX) $(CFLAGS) -c $(LDFLAGS) $$i;done
+	$(CXX) $(CFLAGS) $(procmgr_objs) $(LDFLAGS) -o libprocmgr.so
+	@echo	"################################"
+	@echo	-e "\033[0;36;1m COMPILE BY \033[0m\033[0;35;1m $(CROSS_COMPILE)$(CC)\033[0m"
+	@echo	-e "\033[0;36;1m CFLAGS \033[0m\033[0;35;1m $(CFLAGS) \033[0m"
+	@echo	-e "\033[0;36;1m LDFLAGS \033[0m\033[0;35;1m $(LDFLAGS) \033[0m"
+	@echo	"################################"
+
+clean:
+	@rm -f *.o $(wrt_initd_objs) $(procmgr_objs)
+	@rm -f libprocmgr.so
+
+distclean: clean
+
+

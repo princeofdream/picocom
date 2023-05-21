@@ -20,7 +20,7 @@
 #ifndef __NETWORK_UTILS_HEADER__
 #define __NETWORK_UTILS_HEADER__
 
-#include <basic.h>
+#include <procmgr_basic.h>
 #include <process_manager.h>
 
 typedef struct network_conf_t {

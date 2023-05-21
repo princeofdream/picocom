@@ -20,7 +20,7 @@
 #ifndef __LOCAL_SERVICE_HEADER__
 #define __LOCAL_SERVICE_HEADER__
 
-#include <basic.h>
+#include <procmgr_basic.h>
 #include <process_manager.h>
 #include <service_manager.h>
 #include <manager_client.h>

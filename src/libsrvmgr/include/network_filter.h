@@ -20,7 +20,7 @@
 #ifndef __NETWORK_FILTER_HEADER__
 #define __NETWORK_FILTER_HEADER__
 
-#include <basic.h>
+#include <procmgr_basic.h>
 #include <arpa/inet.h>
 
 #ifdef CONFIG_USE_NETFILTER

@@ -20,7 +20,7 @@
 #define __DIAGNOSOS_SERVER_HEADER__
 
 
-#include <basic.h>
+#include <procmgr_basic.h>
 #include <messages_manager.h>
 #include <local_service.h>
 

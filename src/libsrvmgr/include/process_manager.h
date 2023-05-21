@@ -20,7 +20,7 @@
 #ifndef __PROCESS_MANAGER_HEADER__
 #define __PROCESS_MANAGER_HEADER__
 
-#include <basic.h>
+#include <procmgr_basic.h>
 #include <misc_utils.h>
 
 class process_manager

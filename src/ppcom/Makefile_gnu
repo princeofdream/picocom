@@ -5,11 +5,13 @@ VERSION = 3.2a
 CPPFLAGS += -DVERSION_STR=\"$(VERSION)\"
 CFLAGS += -Wall -g
 
-LD = $(CC)
-LDFLAGS ?= -g
+LD = $(CXX)
+LDFLAGS ?=
 LDLIBS ?=
 
-all: ppcom
+LDLIBS += -lpthread
+
+all: ppcom ppcom_cli
 OBJS =
 
 ## This is the maximum size (in bytes) the output (e.g. copy-paste)
@@ -18,7 +20,7 @@ TTY_Q_SZ = 0
 CPPFLAGS += -DTTY_Q_SZ=$(TTY_Q_SZ)
 
 ## Comment this out to disable high-baudrate support
-CPPFLAGS += -DHIGH_BAUD
+CPPFLAGS += -DHIGH_BAUD -I../include -I../libsrvmgr/include
 
 ## Normally you should NOT enable both: UUCP-style and flock(2)
 ## locking.
@@ -34,8 +36,8 @@ CPPFLAGS += -DUSE_FLOCK
 HISTFILE = .ppcom_history
 CPPFLAGS += -DHISTFILE=\"$(HISTFILE)\" \
 	    -DLINENOISE
-OBJS += linenoise-1.0/linenoise.o
-linenoise-1.0/linenoise.o : linenoise-1.0/linenoise.c linenoise-1.0/linenoise.h
+OBJS += linenoise.o
+linenoise.o : linenoise.cpp linenoise.h
 
 ## Comment this in to enable (force) custom baudrate support
 ## even on systems not enabled by default.
@@ -48,21 +50,39 @@ linenoise-1.0/linenoise.o : linenoise-1.0/linenoise.c linenoise-1.0/linenoise.h
 ## Comment this IN to remove help strings (saves ~ 4-6 Kb).
 #CPPFLAGS += -DNO_HELP
 
+OBJS += \
+		term.o \
+		fdio.o \
+		split.o \
+		custbaud.o \
+		termios2.o  \
+		custbaud_bsd.o \
+		log_server.o
 
-OBJS += ppcom.o term.o fdio.o split.o custbaud.o termios2.o custbaud_bsd.o
-ppcom : $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+PPCOM_OBJS = $(OBJS) ppcom.o
+PPCOM_CLI_OBJS = $(OBJS) ppcom_cli.o
 
-ppcom.o : ppcom.c term.h fdio.h split.h custbaud.h
-term.o : term.c term.h termios2.h custbaud_bsd.h custbaud.h
-split.o : split.c split.h
-fdio.o : fdio.c fdio.h
-termios2.o : termios2.c termios2.h termbits2.h custbaud.h
-custbaud_bsd.o : custbaud_bsd.c custbaud_bsd.h custbaud.h
-custbaud.o : custbaud.c custbaud.h
+ppcom : $(PPCOM_OBJS)
+	set -e;for i in $(OBJS); do $(CXX) $(CFLAGS) -c $(LDFLAGS) $$i;done
+	$(LD) $(LDFLAGS) -o $@ $(PPCOM_OBJS) $(LDLIBS) -L../libsrvmgr -Wl,-rpath=../libsrvmgr -lprocmgr
 
-.c.o :
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
+ppcom_cli : $(PPCOM_CLI_OBJS)
+	set -e;for i in $(OBJS); do $(CXX) $(CFLAGS) -c $(LDFLAGS) $$i;done
+	$(LD) $(LDFLAGS) -o $@ $(PPCOM_CLI_OBJS) $(LDLIBS) -L../libsrvmgr -Wl,-rpath=../libsrvmgr -lprocmgr
+
+HEADERS = custbaud_bsd.h  custbaud.h  debug.h  fdio.h  log_server.h  split.h  termbits2.h  term.h  termios2.h
+
+# ppcom.o : ppcom.cpp ../include/term.h ../include/fdio.h ../include/split.h ../include/custbaud.h
+# term.o : term.cpp ../include/term.h ../include/termios2.h ../include/custbaud_bsd.h ../include/custbaud.h
+# split.o : split.cpp ../include/split.h
+# fdio.o : fdio.cpp ../include/fdio.h
+# termios2.o : termios2.cpp ../include/termios2.h ../include/termbits2.h ../include/custbaud.h
+# custbaud_bsd.o : custbaud_bsd.cpp ../include/custbaud_bsd.h ../include/custbaud.h
+# custbaud.o : custbaud.cpp ../include/custbaud.h
+# log_server.o : log_server.cpp
+
+.cpp.o :
+	$(CXX) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 
 doc : ppcom.1.html ppcom.1 ppcom.1.pdf

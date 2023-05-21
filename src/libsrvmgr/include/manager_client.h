@@ -20,7 +20,7 @@
 #ifndef __DIAGNOSIS_CLIENT_HEADER__
 #define __DIAGNOSIS_CLIENT_HEADER__
 
-#include <basic.h>
+#include <procmgr_basic.h>
 #include <messages_manager.h>
 
 

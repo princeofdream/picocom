@@ -21,7 +21,7 @@
 #define __LOG_SERVER_HEADER__ 1
 
 
-#ifdef CONFIG_LIB_SRVMGR
+#if 1 //def CONFIG_LIB_SRVMGR
 
 #include <service_manager.h>
 

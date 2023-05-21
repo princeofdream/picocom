@@ -18,7 +18,7 @@
 
 #ifndef __MISC_UTILS_HEADER__
 #define __MISC_UTILS_HEADER__
-#include <basic.h>
+#include <procmgr_basic.h>
 #include <iconv.h>
 
 /*! \enum random_word_mode
