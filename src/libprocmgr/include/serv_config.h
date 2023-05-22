@@ -25,9 +25,10 @@
 #define CONFIG_DEFAULT_SERV_PORT 7934
 
 typedef struct serv_conf_t {
-	char  ipaddr[CONFIG_PROCMGR_MAXLEN];
+	char  ipaddr[64];
 	int   port;
 	int   flag;
+	char  socket_path[CONFIG_PROCMGR_MAXLEN];
 	void* serv_cls;
 	void* serv_prm;
 	void* serv_ext;

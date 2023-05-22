@@ -5,9 +5,14 @@ CFLAGS += -Wall -g
 
 LD = $(CXX)
 LDFLAGS ?=
-LDLIBS ?=
 
-LDLIBS += -lpthread
+LDFLAGS += \
+		   -lpthread \
+		   -L../libprocmgr \
+		   -Wl,-rpath=../libprocmgr \
+		   -L./libprocmgr \
+		   -Wl,-rpath=./libprocmgr \
+		   -lprocmgr
 
 all: ppcom ppcom_cli
 OBJS =
@@ -62,8 +67,7 @@ PPCOM_CLI_OBJS = $(OBJS) src/ppcom_cli.o
 
 ppcom : $(PPCOM_OBJS)
 	set -e;for i in $(OBJS); do $(CXX) $(CFLAGS) -c $(LDFLAGS) $$i;done
-	$(LD) $(LDFLAGS) -o $@ $(PPCOM_OBJS) $(LDLIBS) -L../libprocmgr -Wl,-rpath=../libprocmgr -lprocmgr
-
+	$(LD) -o $@ $(PPCOM_OBJS) $(LDFLAGS)
 ppcom_cli : $(PPCOM_CLI_OBJS)
 	set -e;for i in $(OBJS); do $(CXX) $(CFLAGS) -c $(LDFLAGS) $$i;done
 	$(LD) $(LDFLAGS) -o $@ $(PPCOM_CLI_OBJS) $(LDLIBS) -L../libprocmgr -Wl,-rpath=../libprocmgr -lprocmgr
@@ -107,11 +111,10 @@ ppcom.1.pdf : ppcom.1
 
 
 clean:
-	rm -f ppcom.o term.o fdio.o split.o
-	rm -f linenoise-1.0/linenoise.o
-	rm -f custbaud.o termios2.o custbaud_bsd.o
+	rm -f src/*.o
 	rm -f *~
 	rm -f \#*\#
+	rm -f ppcom ppcom_cli
 
 distclean: clean
 	rm -f ppcom

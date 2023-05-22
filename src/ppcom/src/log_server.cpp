@@ -35,6 +35,7 @@ log_serv_cmd_handler(void *param)
 {
 	message_param *msg_param = (message_param*)param;
 
+	logd();
 	if (param == NULL) {
 		loge("message param is NULL");
 		return NULL;
@@ -42,6 +43,7 @@ log_serv_cmd_handler(void *param)
 	// if (msg_param->sub_param == NULL)
 	//     loge("custon param is NULL");
 
+	logd();
 	if (strcmp(msg_param->cmd, "ack") == 0) {
 		sprintf(msg_param->cmd, "%s %s", msg_param->cmd, "ok");
 	} else if (strcmp(msg_param->cmd, "quit") == 0) {
@@ -51,6 +53,7 @@ log_serv_cmd_handler(void *param)
 		return NULL;
 	}
 
+	logd();
 	return NULL;
 }
 
@@ -152,7 +155,7 @@ void start_log_server(void* param)
 	pconfig.set_proc_serv(&mserv_conf);
 	pconfig.set_proc_mutex(mserv_proc.get_thread_mutex());
 	pconfig.set_proc_flag(flag|
-		FLAG_WITH_PTHREAD|FLAG_BLOCK|FLAG_SYNC_MUTEX);
+		FLAG_WITH_PTHREAD|FLAG_SYNC_MUTEX);
 	pconfig.set_proc_param((void*)&mmsg);
 	// *********************************
 
@@ -160,7 +163,7 @@ void start_log_server(void* param)
 	mmisc.flag_to_string(pconfig.get_proc_flag(), __FUNCTION__);
 
 	mserv_proc.start_routine = mserv.start_service_manager_proc;
-	// mserv_proc.start_thread_sync_mutex((void*)pconfig.get_proc_conf());
+	mserv_proc.start_thread_sync_mutex((void*)pconfig.get_proc_conf());
 
 #endif
 	// register_serv_handler(void *(*proc_func)(void* param), void* param)

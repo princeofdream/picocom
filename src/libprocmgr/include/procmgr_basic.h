@@ -77,15 +77,20 @@
 
 #define DEBUG
 
-
-#undef SERVER_SOCKET_PATH
-#if defined(__i386__) || defined(__x86_64__)
-	#define SERVER_SOCKET_PATH "/tmp/procmgr.sock"
-#elif defined(ANDROID) || defined(__aarch64__) || defined(__arm__)
-	#define SERVER_SOCKET_PATH "/dev/socket/procmgr.sock"
-#else
-	#define SERVER_SOCKET_PATH "procmgr.sock"
+#ifndef SERVER_SOCKET_PATH
+	#if defined(__i386__) || defined(__x86_64__)
+		#define SERVER_SOCKET_PATH "/tmp"
+	#elif defined(ANDROID) || defined(__aarch64__) || defined(__arm__)
+		#define SERVER_SOCKET_PATH "/dev/socket"
+	#else
+		#define SERVER_SOCKET_PATH "."
+	#endif
 #endif
+
+#ifndef SERVER_SOCKET_NAME
+	#define SERVER_SOCKET_NAME "procmgr"
+#endif
+
 
 // this is used to output log to STDIN
 #define plog(frm,args...) printf(frm,##args)
@@ -96,11 +101,11 @@
 		#define ploge(frm,args...) ALOGE(frm,##args)
 		#define plogd(frm,args...) ALOGD(frm,##args)
 	#else
-		#define pdbg(frm,args...) printf("<%s:%d>---" frm "\n",__FUNCTION__,__LINE__,##args)
+		#define pdbg(frm,args...) printf("<%s:%d>---\n" frm "\n",__FUNCTION__,__LINE__,##args)
 		#define ploge(frm,args...) printf(frm"\n",##args)
 		// #define plogd(frm,args...) printf(frm"\n",##args)
 		#define plog(frm,args...) printf(frm"\n",##args)
-		#define plogd(frm,args...) printf("<%s:%d>---" frm "\n",__FUNCTION__,__LINE__,##args)
+		#define plogd(frm,args...) printf("<%s:%d>---\n" frm "\n",__FUNCTION__,__LINE__,##args)
 	#endif
 
 #else

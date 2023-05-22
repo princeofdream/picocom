@@ -71,15 +71,21 @@
 
 // #define DEBUG
 
-
+#ifdef SOCKET_SERVER_NAME
 #undef SOCKET_SERVER_NAME
-#if defined(__i386__) || defined(__x86_64__)
-	#define SOCKET_SERVER_NAME "/tmp/srvmgr.sock"
-#elif defined(ANDROID) || defined(__aarch64__) || defined(__arm__)
-	#define SOCKET_SERVER_NAME "/dev/socket/srvmgr.sock"
-#else
-	#define SOCKET_SERVER_NAME "srvmgr.sock"
 #endif
+#if defined(__i386__) || defined(__x86_64__)
+	#define SOCKET_SERVER_NAME "/tmp"
+#elif defined(ANDROID) || defined(__aarch64__) || defined(__arm__)
+	#define SOCKET_SERVER_NAME "/dev/socket"
+#else
+	#define SERVER_SOCKET_PATH "."
+#endif
+
+#ifdef SERVER_SOCKET_NAME
+#undef SERVER_SOCKET_NAME
+#endif
+#define SERVER_SOCKET_NAME "ppcom"
 
 // this is used to output log to STDIN
 #define log(frm,args...) printf(frm,##args)

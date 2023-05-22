@@ -361,6 +361,7 @@ service_manager::start_manager_server(void* param)
 {
 	proc_conf *mproc_param = (proc_conf*)param;
 	socket_server ml_serv;
+	plogd("Enter: %s:%d",__func__,__LINE__);
 
 	if (param == NULL) {
 		ploge("%s param is null, abort!", __FUNCTION__);
@@ -378,6 +379,7 @@ service_manager::start_client_manager(void* param)
 {
 	proc_conf *mproc_param = (proc_conf*)param;
 	socket_server ml_serv;
+	plogd("Enter: %s:%d",__func__,__LINE__);
 
 	if (param == NULL) {
 		ploge("%s param is null, abort!", __FUNCTION__);

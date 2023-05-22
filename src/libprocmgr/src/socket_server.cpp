@@ -22,6 +22,12 @@
 
 pthread_mutex_t mtime_lock;
 
+#ifdef SERVER_SOCKET_PATH
+const char* default_serv_sock_path=SERVER_SOCKET_PATH"/"SERVER_SOCKET_NAME;
+#else
+const char* default_serv_sock_path="/tmp/procmgr";
+#endif
+
 void*
 socket_server::serv_handler(void* param)
 {
@@ -74,7 +80,7 @@ socket_server::socket_server ()
 	msg_serv_callback     = NULL;
 	cli_recv_msg_callback = NULL;
 	cli_send_msg_callback = NULL;
-	msg_serv_conf        = NULL;
+	msg_serv_conf         = NULL;
 	msg_cli_param         = NULL;
 	req_cli_param         = NULL;
 
@@ -84,7 +90,8 @@ socket_server::socket_server ()
 	cli_handler_param     = NULL;
 
 	memset(serv_sock_path, 0x0, sizeof(serv_sock_path));
-	sprintf(serv_sock_path, "%s", SERVER_SOCKET_PATH);
+	sprintf(serv_sock_path, "%s.%d.sock", default_serv_sock_path, getpid());
+	plogd("serv_sock_path:%s", serv_sock_path);
 }
 
 socket_server::~socket_server ()
