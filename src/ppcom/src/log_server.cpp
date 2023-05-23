@@ -21,14 +21,10 @@
 #include <log_server.h>
 #if 1 //def CONFIG_LIB_SRVMGR
 
-#if 0
-serv_param m_servparam;
-process_param m_procparam;
+// new thread conten
+service_manager mserv;
 
-service_manager serv_mgr;
-#endif
-message_param msg_serv;
-
+extern socket_server_init msocket_server_init;
 
 void*
 log_serv_cmd_handler(void *param)
@@ -107,42 +103,12 @@ void start_log_server(void* param)
 	int flag = FLAG_DEFAULT;
 	serv_conf mserv_conf;
 
-#if 0
-	process_manager procmgr;
-	message_param *msg_param;
-
-	// m_servparam.port = 8112;
-	memset(m_servparam.socket_path, 0x0, sizeof(m_servparam.socket_path));
-
-	// default is server
-	// serv_mgr.set_service_type(MGR_SERVICE_CLI);
-	// serv_mgr.set_service_type(MGR_SERVICE_SERV);
-
-	m_servparam.serv_cls = &serv_mgr;
-	// m_servparam.serv_cls = NULL;
-
-	m_procparam.flags     = FLAG_WITH_PTHREAD;
-	// m_procparam.flags    |= FLAG_WITH_IP;
-	// m_procparam.flags    |= FLAG_BLOCK;
-	m_procparam.serv      = &m_servparam;
-	m_procparam.sub_param = NULL;
-
-
-	msg_param = serv_mgr.get_message_manager_class()->get_msg_serv_param();
-	serv_mgr.register_serv_msg_callback(log_serv_cmd_handler, msg_param);
-
-	procmgr.start_routine=start_service_manager_proc;
-	procmgr.start_thread(&m_procparam);
-#endif
-
+	msocket_server_init.set_default_socket_server_path("/tmp/ppcom");
 #if 1
 	// process
 	process_manager mserv_proc;
 	proc_config pconfig;
 	message_param   mmsg;
-
-	// new thread content
-	service_manager mserv;
 
 	//setup serv msg callback
 	mserv.set_service_type(MGR_SERVICE_SERV);

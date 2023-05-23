@@ -21,12 +21,38 @@
 #include <network_manager.h>
 
 pthread_mutex_t mtime_lock;
+static char default_serv_sock_path[1024];
 
-#ifdef SERVER_SOCKET_PATH
-const char* default_serv_sock_path=SERVER_SOCKET_PATH"/"SERVER_SOCKET_NAME;
+socket_server_init::socket_server_init()
+{
+	plogd();
+	memset(default_serv_sock_path, 0x0, sizeof(default_serv_sock_path));
+#if defined(SERVER_SOCKET_PATH) && defined(SERVER_SOCKET_NAME)
+	sprintf(default_serv_sock_path, "%s/%s", SERVER_SOCKET_PATH,SERVER_SOCKET_NAME);
 #else
-const char* default_serv_sock_path="/tmp/procmgr";
+	sprintf(default_serv_sock_path, "%s", "/tmp/procmgr");
 #endif
+}
+
+socket_server_init::socket_server_init(char* socket_path)
+{
+	plogd();
+	memset(default_serv_sock_path, 0x0, sizeof(default_serv_sock_path));
+	sprintf(default_serv_sock_path, "%s", socket_path);
+}
+
+socket_server_init::~socket_server_init()
+{
+}
+
+void
+socket_server_init::set_default_socket_server_path(char* socket_path)
+{
+	memset(default_serv_sock_path, 0x0, sizeof(default_serv_sock_path));
+	sprintf(default_serv_sock_path, "%s", socket_path);
+}
+
+socket_server_init msocket_server_init;
 
 void*
 socket_server::serv_handler(void* param)
@@ -90,12 +116,17 @@ socket_server::socket_server ()
 	cli_handler_param     = NULL;
 
 	memset(serv_sock_path, 0x0, sizeof(serv_sock_path));
-	sprintf(serv_sock_path, "%s.%d.sock", default_serv_sock_path, getpid());
+	if (strlen(default_serv_sock_path) > 0) {
+		sprintf(serv_sock_path, "%s.%d.sock", default_serv_sock_path, getpid());
+	} else {
+		sprintf(serv_sock_path, "%s.%d.sock", "/tmp/procmgr", getpid());
+	}
 	plogd("serv_sock_path:%s", serv_sock_path);
 }
 
 socket_server::~socket_server ()
 {
+	plogd("..................");
 	if (servfd > 0)
 		close(servfd);
 
@@ -153,7 +184,7 @@ socket_server::setup_ip_server(void* param)
 
 	port = CONFIG_DEFAULT_SERV_PORT;
 
-	mserv_conf = (serv_conf*)mparam->serv;
+	mserv_conf = (serv_conf*)mparam->servcfg;
 	if (mserv_conf != NULL) {
 		if (mserv_conf->port > 0)
 			port = mserv_conf->port;
@@ -270,7 +301,7 @@ socket_server::start_server(void* param)
 		mproc_serv_conf.ppid      = servpid;
 		mproc_serv_conf.mlock     = mpm.get_thread_mutex();
 		mproc_serv_conf.param     = serv_handler_param;
-		mproc_serv_conf.serv      = mparam->serv;
+		mproc_serv_conf.servcfg      = mparam->servcfg;
 		mproc_serv_conf.flag      = FLAG_WITH_PROCESS;
 		// mproc_serv_conf.flag      = FLAG_WITH_PTHREAD;
 		// mproc_serv_conf.flag     |= FLAG_SYNC_MUTEX;
@@ -359,7 +390,7 @@ socket_server::setup_ip_client(void* param)
 		ploge("param is NULL, abort!");
 		return -EINVAL;
 	}
-	mserv_conf = (serv_conf*)mparam->serv;
+	mserv_conf = (serv_conf*)mparam->servcfg;
 
 	memset(ipaddr, 0x0,sizeof(ipaddr));
 	sprintf(ipaddr, "%s", "127.0.0.1");
@@ -412,7 +443,7 @@ socket_server::setup_client(void)
 	clipid = getpid();
 
 	clientaddr.sun_family = AF_UNIX;
-	strncpy(clientaddr.sun_path, serv_sock_path, sizeof(clientaddr.sun_path)-1);
+	strncpy(clientaddr.sun_path, serv_sock_path , sizeof(clientaddr.sun_path)-1);
 	len = sizeof(clientaddr);
 
 	pdbg("Client connect ---> %s <---", clientaddr.sun_path);
@@ -454,7 +485,7 @@ socket_server::start_client(void* param)
 		mproc_cli_param.mlock    = mpm.get_thread_mutex();
 		mproc_cli_param.flag     = mparam->flag; // | FLAG_BLOCK;
 		mproc_cli_param.param    = cli_handler_param;
-		mproc_cli_param.serv     = mparam->serv;
+		mproc_cli_param.servcfg     = mparam->servcfg;
 		memset(mproc_cli_param.cmd, 0x0, sizeof(mproc_cli_param.cmd));
 		sprintf(mproc_cli_param.cmd, "%s", mparam->cmd);
 

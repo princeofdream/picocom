@@ -55,10 +55,10 @@ service_manager::start_service_manager_proc(void* param)
 		return (void*)NULL;
 	}
 
-	if (mparam->serv != NULL) {
-		mserv_conf = mparam->serv;
+	if (mparam->servcfg != NULL) {
+		mserv_conf = mparam->servcfg;
 		if (mserv_conf->serv_cls != NULL)
-			mserv = (service_manager*)mparam->serv->serv_cls;
+			mserv = (service_manager*)mparam->servcfg->serv_cls;
 		else
 			mserv = new service_manager();
 	} else {
@@ -71,7 +71,7 @@ service_manager::start_service_manager_proc(void* param)
 
 	mproc_param.mlock = mparam->mlock;
 	mproc_param.flag  = mparam->flag;
-	mproc_param.serv  = mserv_conf;
+	mproc_param.servcfg  = mserv_conf;
 	mproc_param.param = mparam->param;
 
 	// misc_utils mmisc;
@@ -88,10 +88,10 @@ service_manager::start_service_manager_proc(void* param)
 		plog("service type incorrect, Do not start manager service.\n");
 
 	plogd("service done, quit...");
-	if((mparam->serv != NULL) && (mserv_conf->serv_cls == NULL) && (mserv != NULL)) {
+	if((mparam->servcfg != NULL) && (mserv_conf->serv_cls == NULL) && (mserv != NULL)) {
 		delete(mserv);
 		mserv = NULL;
-	} else if((mparam->serv == NULL) && (mserv != NULL)) {
+	} else if((mparam->servcfg == NULL) && (mserv != NULL)) {
 		delete(mserv);
 		mserv = NULL;
 	}
@@ -112,8 +112,8 @@ start_client_manager_proc(void* param)
 		return (void*)NULL;
 	}
 
-	if (mparam->serv != NULL) {
-		mcli = (service_manager*)mparam->serv->serv_cls;
+	if (mparam->servcfg != NULL) {
+		mcli = (service_manager*)mparam->servcfg->serv_cls;
 	} else {
 		mcli = new service_manager();
 	}
@@ -151,7 +151,7 @@ start_client_manager_proc(void* param)
 
 	close(mfd);
 
-	if ((mparam->serv == NULL) && (mcli != NULL)) {
+	if ((mparam->servcfg == NULL) && (mcli != NULL)) {
 		delete(mcli);
 		mcli = NULL;
 	}
@@ -178,8 +178,8 @@ start_client_manager_recv_proc(void* param)
 		return (void*)NULL;
 	}
 
-	if (mparam->serv != NULL) {
-		mcli = (service_manager*)mparam->serv->serv_cls;
+	if (mparam->servcfg != NULL) {
+		mcli = (service_manager*)mparam->servcfg->serv_cls;
 	} else {
 		mcli = new service_manager();
 	}
@@ -204,7 +204,7 @@ start_client_manager_recv_proc(void* param)
 
 	close(mfd);
 
-	if ((mparam->serv == NULL) && (mcli != NULL)) {
+	if ((mparam->servcfg == NULL) && (mcli != NULL)) {
 		delete(mcli);
 		mcli = NULL;
 	}
@@ -212,7 +212,7 @@ start_client_manager_recv_proc(void* param)
 	return (void*)NULL;
 }
 
-// handle serv message action,
+// handle servcfg message action,
 // new process/pthread from local service accept
 void*
 service_manager_serv_handler(void* param)
@@ -228,8 +228,8 @@ service_manager_serv_handler(void* param)
 		return NULL;
 	}
 
-	if (mpconf->serv != NULL) {
-		mserv_conf = mpconf->serv;
+	if (mpconf->servcfg != NULL) {
+		mserv_conf = mpconf->servcfg;
 		if (mserv_conf->serv_cls != NULL) {
 			mserv = (service_manager*)mserv_conf->serv_cls;
 		} else {
@@ -268,7 +268,7 @@ service_manager_serv_handler(void* param)
 	//     mserv->respond_cmd(mfd, NULL);
 	// }
 
-	if (mpconf->serv != NULL) {
+	if (mpconf->servcfg != NULL) {
 		if ((mserv_conf->serv_cls == NULL) && (mserv != NULL)) {
 			delete(mserv);
 			mserv = NULL;
@@ -302,8 +302,8 @@ service_manager::manager_cli_handler(void* param)
 		return NULL;
 	}
 
-	if (mproc_param->serv != NULL) {
-		mserv_conf = mproc_param->serv;
+	if (mproc_param->servcfg != NULL) {
+		mserv_conf = mproc_param->servcfg;
 		if (mserv_conf->serv_cls != NULL) {
 			mserv = (service_manager*)mserv_conf->serv_cls;
 		} else {
@@ -335,7 +335,7 @@ service_manager::manager_cli_handler(void* param)
 		plogd("cmd: %s", msg_param->cmd);
 	mserv->start_client_manager_send_pthread(msg_param);
 
-	if (mproc_param->serv != NULL) {
+	if (mproc_param->servcfg != NULL) {
 		if ((mserv_conf->serv_cls == NULL) && (mserv != NULL)) {
 			delete(mserv);
 			mserv = NULL;
@@ -360,7 +360,6 @@ int
 service_manager::start_manager_server(void* param)
 {
 	proc_conf *mproc_param = (proc_conf*)param;
-	socket_server ml_serv;
 	plogd("Enter: %s:%d",__func__,__LINE__);
 
 	if (param == NULL) {
@@ -378,7 +377,6 @@ int
 service_manager::start_client_manager(void* param)
 {
 	proc_conf *mproc_param = (proc_conf*)param;
-	socket_server ml_serv;
 	plogd("Enter: %s:%d",__func__,__LINE__);
 
 	if (param == NULL) {
@@ -410,7 +408,7 @@ service_manager::start_client_manager_recv_pthread(message_param *msg_param)
 	mproc_recv_param.mlock    = mproc_recv.get_thread_mutex();
 	mproc_recv_param.flag     = FLAG_WITH_PTHREAD;
 	mproc_recv_param.flag    |= FLAG_SYNC_MUTEX;
-	mproc_recv_param.serv     = &mserv_conf;
+	mproc_recv_param.servcfg  = &mserv_conf;
 	mproc_recv_param.param    = (void*)&msg_param;
 
 	mproc_recv.start_routine = start_client_manager_recv_proc;
@@ -436,7 +434,7 @@ service_manager::start_client_manager_send_pthread(message_param *msg_param)
 	mproc_send_param.flag    |= FLAG_WITH_PTHREAD;
 	mproc_send_param.flag    |= FLAG_SYNC_MUTEX;
 	mproc_send_param.flag    |= FLAG_BLOCK;
-	mproc_send_param.serv     = &mserv_conf;
+	mproc_send_param.servcfg  = &mserv_conf;
 	mproc_send_param.param    = (void*)msg_param;
 
 	mproc_send.start_routine = start_client_manager_proc;
@@ -632,7 +630,7 @@ service_manager::recv_message_async(message_param *param)
 			}
 			else
 			{
-				// plogd("serv cmd: %s", msg_ret->cmd);
+				// plogd("servcfg cmd: %s", msg_ret->cmd);
 				if (strcasecmp(msg_ret->cmd, "quit") == 0) {
 					plogd("%s get msg: %s, abort", __func__, msg_ret->cmd);
 					break;

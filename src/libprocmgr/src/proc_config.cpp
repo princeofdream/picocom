@@ -43,7 +43,7 @@ proc_config::get_proc_conf()
 serv_conf*
 proc_config::get_proc_serv()
 {
-	return pconf.serv;
+	return pconf.servcfg;
 }
 
 void
@@ -99,7 +99,7 @@ proc_config::set_proc_subparam(void *param)
 void
 proc_config::set_proc_serv(serv_conf *param)
 {
-	pconf.serv = param;
+	pconf.servcfg = param;
 }
 
 int

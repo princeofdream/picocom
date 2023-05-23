@@ -76,6 +76,7 @@ public:
 	int cli_recv_ready;
 
 	int service_type;
+	socket_server ml_serv;
 
 private:
 	messages_manager mmsg;

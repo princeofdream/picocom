@@ -75,8 +75,6 @@
 // #define uint16_t (unsigned short)
 // #define uint8_t (unsigned char)
 
-#define DEBUG
-
 #ifndef SERVER_SOCKET_PATH
 	#if defined(__i386__) || defined(__x86_64__)
 		#define SERVER_SOCKET_PATH "/tmp"
@@ -92,10 +90,12 @@
 #endif
 
 
+#define PDEBUG
+
 // this is used to output log to STDIN
 #define plog(frm,args...) printf(frm,##args)
 
-#ifdef DEBUG
+#ifdef PDEBUG
 	#ifdef ANDROID
 		#define pdbg(frm,args...) ALOGD("<%s:%d>---" frm "\n",__FUNCTION__,__LINE__,##args)
 		#define ploge(frm,args...) ALOGE(frm,##args)

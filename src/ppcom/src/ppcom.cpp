@@ -64,6 +64,7 @@
 
 #include <config.h>
 
+#include <basic.h>
 #include <log_server.h>
 
 #include "custbaud.h"
@@ -1657,7 +1658,7 @@ loop(void)
                 if ( opts.log_filename )
                     if ( writen_ni(log_fd, buff_rd, n) < n )
                         fatal("write to logfile failed: %s", strerror(errno));
-#if 1
+#if 1 // write log to rd_fd to file
 				if (misc_msg.index > 0) {
 					writen_ni(misc_msg.rd_fd[1], buff_rd, n);
 				}

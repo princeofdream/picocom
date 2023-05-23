@@ -69,51 +69,41 @@
 #undef LOG_TAG
 #define LOG_TAG "srvmgr"
 
-// #define DEBUG
+#define DEBUG
 
-#ifdef SOCKET_SERVER_NAME
-#undef SOCKET_SERVER_NAME
+#ifndef MAX_VAL
+	#define MAX_VAL(var1, var2) ((var1 > var2)? var1:var2)
 #endif
-#if defined(__i386__) || defined(__x86_64__)
-	#define SOCKET_SERVER_NAME "/tmp"
-#elif defined(ANDROID) || defined(__aarch64__) || defined(__arm__)
-	#define SOCKET_SERVER_NAME "/dev/socket"
-#else
-	#define SERVER_SOCKET_PATH "."
-#endif
-
-#ifdef SERVER_SOCKET_NAME
-#undef SERVER_SOCKET_NAME
-#endif
-#define SERVER_SOCKET_NAME "ppcom"
-
 // this is used to output log to STDIN
 #define log(frm,args...) printf(frm,##args)
 
-// #ifdef DEBUG
-// #ifdef ANDROID
-// #define DBG(frm,args...) ALOGD("--<%s:%d>---" frm "---\n",__FUNCTION__,__LINE__,##args)
-// #define loge(frm,args...) ALOGE(frm,##args)
-// #define logd(frm,args...) ALOGD("--<%s:%d>---" frm "---\n",__FUNCTION__,__LINE__,##args)
-// #else
-// #define DBG(frm,args...) printf("--<%s:%d>---" frm "---\n",__FUNCTION__,__LINE__,##args)
-#define loge(frm,args...) printf(frm"\n",##args)
-#define logd(frm,args...) printf(frm"\n",##args)
-// #endif
-// #else
-// #ifdef ANDROID
-// #define DBG(frm, args...) while(0){;}
-// #define loge(frm,args...) ALOGE(frm,##args)
-// #define logd(frm,args...) ALOGD(frm,##args)
-// #else
-#define dbg(frm, args...) while(0){;}
-// #define loge(frm,args...) printf(frm"\n",##args)
-// #define logd(frm,args...) printf(frm"\n",##args)
-// #endif
-// #endif
+#ifdef DEBUG
+	#ifdef ANDROID
+		#define dbg(frm,args...) ALOGD("<%s:%d>---" frm "\n",__FUNCTION__,__LINE__,##args)
+		#define loge(frm,args...) ALOGE(frm,##args)
+		#define logd(frm,args...) ALOGD(frm,##args)
+	#else
+		#define dbg(frm,args...) printf("<%s:%d>---\n" frm "\n",__FUNCTION__,__LINE__,##args)
+		#define loge(frm,args...) printf(frm"\n",##args)
+		// #define logd(frm,args...) printf(frm"\n",##args)
+		#define log(frm,args...) printf(frm"\n",##args)
+		#define logd(frm,args...) printf("<%s:%d>---\n" frm "\n",__FUNCTION__,__LINE__,##args)
+	#endif
 
+#else
+	#ifdef ANDROID
+		// #define pdbg(frm, args...) while(0){;}
+		#define dbg(frm,args...) printf(frm"\n",##args)
+		#define loge(frm,args...) ALOGE(frm,##args)
+		#define logd(frm,args...) ALOGD(frm,##args)
+	#else
+		// #define pdbg(frm, args...) while(0){;}
+		#define dbg(frm,args...) printf(frm"\n",##args)
+		#define loge(frm,args...) printf(frm"\n",##args)
+		#define logd(frm,args...) printf(frm"\n",##args)
+	#endif
+#endif
 
-#define MAX_VAL(var1, var2) ((var1 > var2)? var1:var2)
 
 
 

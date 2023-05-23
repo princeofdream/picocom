@@ -22,12 +22,16 @@
 #include <basic.h>
 
 
+process_manager   mcli_proc;
+proc_conf         mcli_proc_conf;
+serv_conf         mserv_conf;
+service_manager   mserv_mgr;
+message_param     mmsg;
 
 int main(int argc, char *argv[])
 {
 	int flag = FLAG_DEFAULT;
 	int ch;
-	serv_conf mserv_conf;
 
 	mserv_conf.port = 0;
 	memset(mserv_conf.socket_path, 0x0,sizeof(mserv_conf.socket_path));
@@ -62,67 +66,29 @@ int main(int argc, char *argv[])
 		}
 	}
 
-#if 0
-	// process
-	process_manager mserv_proc;
-	proc_config pconfig;
-	message_param   mmsg;
-
-	// new thread content
-	service_manager mserv;
-
-	//setup serv msg callback
-	mserv.set_service_type(MGR_SERVICE_SERV);
-	// mserv.register_serv_msg_callback(serv_respond_cmd, NULL);
-
-	// set process_manager mlock to child thread
-	mserv_conf.serv_cls        = (void*)&mserv;
-
-	// *********************************
-	pconfig.set_proc_serv(&mserv_conf);
-	pconfig.set_proc_mutex(mserv_proc.get_thread_mutex());
-	pconfig.set_proc_flag(flag|
-		FLAG_WITH_PTHREAD|FLAG_BLOCK|FLAG_SYNC_MUTEX);
-	pconfig.set_proc_param((void*)&mmsg);
-	// *********************************
-
-	misc_utils mmisc;
-	mmisc.flag_to_string(pconfig.get_proc_flag(), __FUNCTION__);
-
-	mserv_proc.start_routine = mserv.start_service_manager_proc;
-	mserv_proc.start_thread_sync_mutex((void*)pconfig.get_proc_conf());
-	// FLAG_BLOCK will block thread unti it quit
-
-#endif
-#if 1
-	process_manager mcli_proc;
-	proc_conf   mcli_proc_param;
-
-	service_manager mserv;
-	message_param   mmsg;
 
 	memset(mmsg.cmd, 0x0, sizeof(mmsg.cmd));
 	sprintf(mmsg.cmd, "%s", "send_file sample.tar");
 
 	//setup serv msg callback
-	mserv.set_service_type(MGR_SERVICE_CLI);
-	mserv.register_cli_recv_msg_callback(recv_handler, (void*)"ext byJames");
-	mserv.register_cli_send_msg_callback(request_cmd_once, &mmsg);
+	mserv_mgr.set_service_type(MGR_SERVICE_CLI);
+	mserv_mgr.ml_serv.set_serv_socket_path(mserv_conf.socket_path);
+	// mserv_mgr.register_cli_recv_msg_callback(recv_handler, (void*)"ext byJames");
+	// mserv_mgr.register_cli_send_msg_callback(request_cmd_once, &mmsg);
 
 	// set process_manager mlock to child thread
-	mserv_conf.serv_cls    = (void*)&mserv;
+	mserv_conf.serv_cls    = (void*)&mserv_mgr;
 
-	mcli_proc_param.mlock  = mcli_proc.get_thread_mutex();
-	mcli_proc_param.flag   = flag;
-	mcli_proc_param.flag  |= FLAG_WITH_PTHREAD;
-	mcli_proc_param.flag  |= FLAG_BLOCK;
-	mcli_proc_param.serv   = &mserv_conf;
-	mcli_proc_param.param  = (void*)&mmsg;
+	mcli_proc_conf.mlock    = mcli_proc.get_thread_mutex();
+	mcli_proc_conf.flag     = flag;
+	mcli_proc_conf.flag    |= FLAG_WITH_PTHREAD;
+	mcli_proc_conf.flag    |= FLAG_BLOCK;
+	mcli_proc_conf.servcfg  = &mserv_conf;
+	mcli_proc_conf.param    = (void*)&mmsg;
 
-	mcli_proc.start_routine = mserv.start_service_manager_proc;
-	mcli_proc.start_thread_sync_mutex((void*)&mcli_proc_param);
+	mcli_proc.start_routine = mserv_mgr.start_service_manager_proc;
+	mcli_proc.start_thread_sync_mutex((void*)&mcli_proc_conf);
 
-#endif
 	// while (true) {
 	//     sleep(120);
 	// }

@@ -25,6 +25,18 @@
 #include <client_manager.h>
 #include <misc_utils.h>
 
+class socket_server_init
+{
+public:
+	socket_server_init ();
+	socket_server_init (char*);
+	~socket_server_init ();
+
+	void set_default_socket_server_path(char*);
+private:
+	/* data */
+};
+
 class socket_server
 {
 public:

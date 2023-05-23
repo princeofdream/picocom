@@ -31,7 +31,7 @@ typedef struct proc_conf_t {
 	pid_t ppid;
 	pthread_mutex_t *mlock;
 	char cmd[CONFIG_PROCMGR_MAXLEN];
-	serv_conf *serv;
+	serv_conf *servcfg;
 	void *param;
 	void *sub_param;
 	int pipefd[2];
