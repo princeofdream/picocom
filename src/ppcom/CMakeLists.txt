@@ -3,6 +3,7 @@ project(ppcom)
 
 link_directories(
     ${CMAKE_BINARY_DIR}/src/libprocmgr
+    ./
 )
 
 include_directories(
@@ -34,12 +35,34 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
     list(APPEND PPCOM_LIBS socket)
 endif()
 
-target_link_libraries(${PROJECT_NAME} ${PPCOM_LIBS})
-add_dependencies(${PROJECT_NAME} procmgr)
+target_link_libraries(${PROJECT_NAME} ${PPCOM_LIBS} -Wl,-rpath=./)
+add_dependencies(${PROJECT_NAME} procmgr-shared)
 
 add_executable(${PROJECT_NAME}-cli ${SOURCES} ${SOURCES_CLI})
-target_link_libraries(${PROJECT_NAME}-cli ${PPCOM_LIBS})
-add_dependencies(${PROJECT_NAME}-cli procmgr)
+target_link_libraries(${PROJECT_NAME}-cli ${PPCOM_LIBS} -Wl,-rpath=./)
+add_dependencies(${PROJECT_NAME}-cli procmgr-shared)
 
+install(TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION include
+        MANIFEST DESTINATION share
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+        INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
+install(TARGETS ${PROJECT_NAME}-cli
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION include
+        MANIFEST DESTINATION share
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+        INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
