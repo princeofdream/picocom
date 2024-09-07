@@ -60,7 +60,7 @@ OBJS += \
 		src/custbaud.o \
 		src/termios2.o  \
 		src/custbaud_bsd.o \
-		src/log_server.o
+		src/ctrl_term.o
 
 PPCOM_OBJS = $(OBJS) src/ppcom.o
 PPCOM_CLI_OBJS = $(OBJS) src/ppcom_cli.o
@@ -72,7 +72,7 @@ ppcom_cli : $(PPCOM_CLI_OBJS)
 	set -e;for i in $(OBJS); do $(CXX) $(CFLAGS) -c $(LDFLAGS) $$i;done
 	$(LD) $(LDFLAGS) -o $@ $(PPCOM_CLI_OBJS) $(LDLIBS) -L../libprocmgr -Wl,-rpath=../libprocmgr -lprocmgr
 
-HEADERS = custbaud_bsd.h  custbaud.h  debug.h  fdio.h  log_server.h  split.h  termbits2.h  term.h  termios2.h
+HEADERS = custbaud_bsd.h  custbaud.h  debug.h  fdio.h  ctrl_term.h  split.h  termbits2.h  term.h  termios2.h
 
 # ppcom.o : ppcom.cpp ../include/term.h ../include/fdio.h ../include/split.h ../include/custbaud.h
 # term.o : term.cpp ../include/term.h ../include/termios2.h ../include/custbaud_bsd.h ../include/custbaud.h
@@ -81,7 +81,7 @@ HEADERS = custbaud_bsd.h  custbaud.h  debug.h  fdio.h  log_server.h  split.h  te
 # termios2.o : termios2.cpp ../include/termios2.h ../include/termbits2.h ../include/custbaud.h
 # custbaud_bsd.o : custbaud_bsd.cpp ../include/custbaud_bsd.h ../include/custbaud.h
 # custbaud.o : custbaud.cpp ../include/custbaud.h
-# log_server.o : log_server.cpp
+# ctrl_term.o : ctrl_term.cpp
 
 .cpp.o :
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<

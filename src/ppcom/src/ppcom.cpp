@@ -67,7 +67,7 @@
 #include <config.h>
 
 #include <basic.h>
-#include <log_server.h>
+#include <ctrl_term.h>
 
 #include "custbaud.h"
 
@@ -1491,7 +1491,7 @@ loop(void)
 	//         msgs_rd_routine, &misc_msg);
 #endif
 
-    start_log_server(NULL);
+    start_ctrl_term(misc_msg.rd_fd[0], misc_msg.wr_fd[1]);
 
     while ( ! sig_exit ) {
         struct timeval tv, *ptv;
@@ -1674,7 +1674,7 @@ loop(void)
 
 loop_end:
 
-    stop_log_server(NULL);
+    stop_ctrl_term(NULL);
 
 #if 0
     return LE_SIGNAL;

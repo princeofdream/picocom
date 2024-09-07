@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  log_server.cpp
+ *       Filename:  ctrl_term.cpp
  *
  *    Description:  log server
  *
@@ -18,7 +18,7 @@
 
 #include <basic.h>
 
-#include <log_server.h>
+#include <ctrl_term.h>
 #if 1 //def CONFIG_LIB_SRVMGR
 
 // new thread conten
@@ -93,7 +93,7 @@ send_request_cmd(message_param *param)
 	return 0;
 }
 
-void start_log_server(void* param)
+void start_ctrl_term(int infd, int outfd)
 {
 	int flag = FLAG_DEFAULT;
 	serv_conf mserv_conf;
@@ -132,18 +132,18 @@ void start_log_server(void* param)
 
 }
 
-void stop_log_server(void* param)
+void stop_ctrl_term(void* param)
 {
 	plogd("============== stop_service_manager_proc <done> =================");
 	return;
 }
 
 #else
-void start_log_server(void* param)
+void start_ctrl_term(void* param)
 {
 	return;
 }
-void stop_log_server(void* param)
+void stop_ctrl_term(void* param)
 {
 	return;
 }

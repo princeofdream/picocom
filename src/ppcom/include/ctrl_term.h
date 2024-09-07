@@ -1,9 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename:  log_server.h
+ *       Filename:  ctrl_term.h
  *
- *    Description:  log_server header
+ *    Description:  ctrl_term header
  *
  *        Version:  1.0
  *        Created:  2021年09月18日 13时50分15秒
@@ -28,8 +28,8 @@
 
 #define READ_BUFFER_LEN 4096
 
-void start_log_server(void* param);
-void stop_log_server(void* param);
+void start_ctrl_term(int infd, int outfd);
+void stop_ctrl_term(void* param);
 
 
 
