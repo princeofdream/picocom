@@ -1436,9 +1436,9 @@ void *msgs_rd_routine(void *param)
 		memset(buf, 0x0, sizeof(buf));
 		read(misc_msg->rd_fd[0], buf, sizeof(buf));
 		if (misc_msg->fd > 0) {
-#if 1
+#if 0
 			memset(msg_tmp, 0x0, sizeof(msg_tmp));
-			sprintf(msg_tmp, "[%s]", buf);
+			sprintf(msg_tmp, "%s", buf);
 			write(misc_msg->fd, msg_tmp, strlen(msg_tmp));
 #else
 			write(misc_msg->fd, buf, strlen(buf));
@@ -1472,7 +1472,7 @@ loop(void)
     int r, n;
     int stdin_closed;
 
-#if 1
+#if 0
 	struct timeval st_tv;
 	struct tm *st_tm;
 	char st_log_path[1024];
@@ -1569,11 +1569,7 @@ loop(void)
 #endif
         }
 
-#if 0	// by jamesl optimize rd/wr fd set
-        if ( FD_ISSET(STI, &rdset) )
-#else
         if ( FD_ISSET(STI, &misc_msg.rd_set) )
-#endif
 		{
             /* read from terminal */
             char buff_rd[STI_RD_SZ];
@@ -1632,19 +1628,14 @@ loop(void)
         }
     skip_proc_STI:
 
-#if 0	// by jamesl optimize rd/wr fd set
-        if ( FD_ISSET(tty_fd, &rdset) )
-#else
+        // input: read from port
         if ( FD_ISSET(tty_fd, &misc_msg.rd_set) )
-#endif
 		{
-
             char buff_rd[TTY_RD_SZ];
             char buff_map[TTY_RD_SZ * M_MAXMAP];
 
-            /* read from port */
-
             do {
+                memset(buff_rd, 0x0, sizeof(buff_rd));
                 n = read(tty_fd, &buff_rd, sizeof(buff_rd));
             } while (n < 0 && errno == EINTR);
             if (n == 0) {
@@ -1656,14 +1647,23 @@ loop(void)
                 int i;
                 char *bmp = &buff_map[0];
                 if ( opts.log_filename )
+                    if (buff_rd[0] == '\r') {
+                        buff_rd[0] = '\n';
+                    }
                     if ( writen_ni(log_fd, buff_rd, n) < n )
                         fatal("write to logfile failed: %s", strerror(errno));
-#if 1 // write log to rd_fd to file
+#if 0 // write log to rd_fd to file
 				if (misc_msg.index > 0) {
-					writen_ni(misc_msg.rd_fd[1], buff_rd, n);
+                    if (buff_rd[0] == '\r') {
+                        buff_rd[0] = '\n';
+                    }
+                    writen_ni(misc_msg.rd_fd[1], buff_rd, n);
 				}
 #endif
                 for (i = 0; i < n; i++) {
+                    if (buff_rd[i] == '\r') {
+                        buff_rd[i] = '\n';
+                    }
                     bmp += do_map(bmp, opts.imap, buff_rd[i]);
                 }
                 n = bmp - buff_map;
@@ -1672,15 +1672,9 @@ loop(void)
             }
         }
 
-#if 0
-        if ( FD_ISSET(tty_fd, &wrset) )
-#else
+        // output: Write to terminal port
         if ( FD_ISSET(tty_fd, &misc_msg.wr_set) )
-#endif
 		{
-
-            /* write to port */
-
             int sz;
             sz = (tty_q.len < tty_write_sz) ? tty_q.len : tty_write_sz;
             do {
@@ -1688,9 +1682,11 @@ loop(void)
             } while ( n < 0 && errno == EINTR );
             if ( n <= 0 )
                 fatal("write to port failed: %s", strerror(errno));
-            if ( opts.lecho && opts.log_filename )
-                if ( writen_ni(log_fd, tty_q.buff, n) < n )
+            if ( opts.lecho && opts.log_filename ) {
+                if ( writen_ni(log_fd, tty_q.buff, n) < n ) {
                     fatal("write to logfile failed: %s", strerror(errno));
+                }
+            }
             memmove(tty_q.buff, tty_q.buff + n, tty_q.len - n);
             tty_q.len -= n;
         }
@@ -2064,8 +2060,32 @@ parse_args(int argc, char *argv[])
             }
             break;
         case 'g':
+            struct timeval log_st_tv;
+            struct tm *log_st_tm;
+            char *log_ch_str;
+            char tm_buf[64];
+
             if ( opts.log_filename ) free(opts.log_filename);
-            opts.log_filename = strdup(optarg);
+            opts.log_filename = (char*)malloc(strlen(optarg)+64);
+            memset(opts.log_filename, 0x0, strlen(optarg)+64);
+
+            gettimeofday(&log_st_tv, NULL);
+            log_st_tm = localtime(&log_st_tv.tv_sec);
+            sprintf(tm_buf,"_%d%02d%02d_%02d%02d%02d",
+                    log_st_tm->tm_year+1900,log_st_tm->tm_mon+1,log_st_tm->tm_mday,
+                    log_st_tm->tm_hour,log_st_tm->tm_min,log_st_tm->tm_sec);
+            // sprintf(opts.log_filename, "%s", optarg);
+
+            while ((log_ch_str = strstr(optarg, "_date"))) {
+                strncpy(opts.log_filename, optarg, log_ch_str - optarg);
+                opts.log_filename[log_ch_str - optarg] = 0;
+                strcat(opts.log_filename, tm_buf);
+                strcat(opts.log_filename, log_ch_str + strlen("_date"));
+                strcpy(optarg, opts.log_filename);
+            }
+
+            // plogw("filename: [%s]", opts.log_filename);
+            // opts.log_filename = strdup(optarg);
             break;
         case 't':
             if ( opts.initstring ) free(opts.initstring);
