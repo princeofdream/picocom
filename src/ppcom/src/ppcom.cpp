@@ -52,6 +52,8 @@
 #endif /* ifndef _GNU_SOURCE */
 
 #define CONFIG_ENABLE_MULTI_FD 1
+#define CONFIG_FORCE_INPUT_RN 1
+#define CONFIG_FORCE_OUTPUT_RN 1
 
 #include <getopt.h>
 
@@ -385,19 +387,19 @@ uucp_unlock(void)
 #define HEXBUF_SZ 128
 #define HEXDELIM " \r;:-_.,/"
 
-#define hexisdelim(c) ( strchr(HEXDELIM, (c)) != NULL )
+#define hexisdelim(val_chr) ( strchr(HEXDELIM, (val_chr)) != NULL )
 
 static inline int
-hex2byte (char c)
+hex2byte (char val_chr)
 {
     int r;
 
-    if ( c >= '0' && c <= '9' )
-        r = c - '0';
-    else if ( c >= 'A' && c <= 'F')
-        r = c - 'A' + 10;
-    else if ( c >= 'a' && c <= 'f' )
-        r = c - 'a' + 10;
+    if ( val_chr >= '0' && val_chr <= '9' )
+        r = val_chr - '0';
+    else if ( val_chr >= 'A' && val_chr <= 'F')
+        r = val_chr - 'A' + 10;
+    else if ( val_chr >= 'a' && val_chr <= 'f' )
+        r = val_chr - 'a' + 10;
     else
         r = -1;
 
@@ -407,22 +409,22 @@ hex2byte (char c)
 int
 hex2bin(unsigned char *buf, int sz, const char *str)
 {
-    char c;
+    char val_chr;
     int b0, b1;
     int i;
 
     i = 0;
     while (i < sz) {
         /* delimiter, end of string, or high nibble */
-        c = *str++;
-        if ( c == '\0' ) break;
-        if ( hexisdelim(c) ) continue;
-        b0 = hex2byte(c);
+        val_chr = *str++;
+        if ( val_chr == '\0' ) break;
+        if ( hexisdelim(val_chr) ) continue;
+        b0 = hex2byte(val_chr);
         if ( b0 < 0 ) return -1;
         /* low nibble */
-        c = *str++;
-        if ( c == '\0' ) return -1;
-        b1 = hex2byte(c);
+        val_chr = *str++;
+        if ( val_chr == '\0' ) return -1;
+        b1 = hex2byte(val_chr);
         if ( b1 < 0 ) return -1;
         /* pack byte */
         buf[i++] = (unsigned char)b0 << 4 | (unsigned char)b1;
@@ -748,51 +750,51 @@ map2hex (char *b, char c)
 }
 
 int
-do_map (char *b, int map, char c)
+do_map (char *buf_chr, int map, char val_chr)
 {
     int n = -1;
 
-    switch (c) {
+    switch (val_chr) {
     case '\x7f':
         /* DEL mapings */
         if ( map & M_DELBS ) {
-            b[0] = '\x08'; n = 1;
+            buf_chr[0] = '\x08'; n = 1;
         }
         break;
     case '\x08':
         /* BS mapings */
         if ( map & M_BSDEL ) {
-            b[0] = '\x7f'; n = 1;
+            buf_chr[0] = '\x7f'; n = 1;
         }
         break;
     case '\x0d':
         /* CR mappings */
         if ( map & M_CRLF ) {
-            b[0] = '\x0a'; n = 1;
+            buf_chr[0] = '\x0a'; n = 1;
         } else if ( map & M_CRCRLF ) {
-            b[0] = '\x0d'; b[1] = '\x0a'; n = 2;
+            buf_chr[0] = '\x0d'; buf_chr[1] = '\x0a'; n = 2;
         } else if ( map & M_IGNCR ) {
             n = 0;
         } else if ( map & M_CRHEX ) {
-            n = map2hex(b, c);
+            n = map2hex(buf_chr, val_chr);
         }
         break;
     case '\x0a':
         /* LF mappings */
         if ( map & M_LFCR ) {
-            b[0] = '\x0d'; n = 1;
+            buf_chr[0] = '\x0d'; n = 1;
         } else if ( map & M_LFCRLF ) {
-            b[0] = '\x0d'; b[1] = '\x0a'; n = 2;
+            buf_chr[0] = '\x0d'; buf_chr[1] = '\x0a'; n = 2;
         } else if ( map & M_IGNLF ) {
             n = 0;
         } else if ( map & M_LFHEX ) {
-            n = map2hex(b, c);
+            n = map2hex(buf_chr, val_chr);
         }
         break;
     case '\x09':
         /* TAB mappings */
         if ( map & M_TABHEX ) {
-            n = map2hex(b,c);
+            n = map2hex(buf_chr,val_chr);
         }
         break;
     default:
@@ -800,24 +802,24 @@ do_map (char *b, int map, char c)
     }
 
     if ( n < 0 && map & M_SPCHEX ) {
-        if ( c == '\x7f' || ( (unsigned char)c < 0x20
-                              && c != '\x09' && c != '\x0a'
-                              && c != '\x0d') ) {
-            n = map2hex(b,c);
+        if ( val_chr == '\x7f' || ( (unsigned char)val_chr < 0x20
+                              && val_chr != '\x09' && val_chr != '\x0a'
+                              && val_chr != '\x0d') ) {
+            n = map2hex(buf_chr,val_chr);
         }
     }
     if ( n < 0 && map & M_8BITHEX ) {
-        if ( c & 0x80 ) {
-            n = map2hex(b,c);
+        if ( val_chr & 0x80 ) {
+            n = map2hex(buf_chr,val_chr);
         }
     }
     if ( n < 0 && map & M_NRMHEX ) {
-        if ( (unsigned char)c >= 0x20 && (unsigned char)c < 0x7f ) {
-            n = map2hex(b,c);
+        if ( (unsigned char)val_chr >= 0x20 && (unsigned char)val_chr < 0x7f ) {
+            n = map2hex(buf_chr,val_chr);
         }
     }
     if ( n < 0 ) {
-        b[0] = c; n = 1;
+        buf_chr[0] = val_chr; n = 1;
     }
 
     assert(n > 0 && n <= M_MAXMAP);
@@ -826,12 +828,12 @@ do_map (char *b, int map, char c)
 }
 
 void
-map_and_write (int fd, int map, char c)
+map_and_write (int fd, int map, char val_chr)
 {
     char b[M_MAXMAP];
     int n;
 
-    n = do_map(b, map, c);
+    n = do_map(b, map, val_chr);
     if ( n )
         if ( writen_ni(fd, b, n) < n )
             fatal("write to stdout failed: %s", strerror(errno));
@@ -1543,6 +1545,7 @@ loop(void)
 			goto loop_end;
         }
 
+        // input: read from stdin
 #if CONFIG_ENABLE_MULTI_FD
         if ( FD_ISSET(STI, &misc_msg.rd_set) )
 #else
@@ -1552,9 +1555,10 @@ loop(void)
             /* read from terminal */
             char buff_rd[STI_RD_SZ];
             int i;
-            unsigned char c;
+            unsigned char val_chr;
 
             do {
+                memset(buff_rd, 0x0, sizeof(buff_rd));
                 n = read(STI, buff_rd, sizeof(buff_rd));
             } while (n < 0 && errno == EINTR);
             if (n == 0) {
@@ -1570,16 +1574,16 @@ loop(void)
             }
 
             for ( i = 0; i < n; i++ ) {
-                c = buff_rd[i];
+                val_chr = buff_rd[i];
                 switch (state) {
                 case ST_COMMAND:
-                    if ( c == opts.escape ) {
+                    if ( val_chr == opts.escape ) {
                         /* pass the escape character down */
-                        if ( tty_q_push((char *)&c, 1) != 1 )
+                        if ( tty_q_push((char *)&val_chr, 1) != 1 )
                             fd_printf(STO, "\x07");
                     } else {
                         /* process command key */
-                        if ( do_command(c) ) {
+                        if ( do_command(val_chr) ) {
                             /* ppcom exit */
 							le_ret = LE_CMD;
 							goto loop_end;
@@ -1588,11 +1592,26 @@ loop(void)
                     state = ST_TRANSPARENT;
                     break;
                 case ST_TRANSPARENT:
-                    if ( ! opts.noescape && c == opts.escape )
+                    if ( ! opts.noescape && val_chr == opts.escape ) {
                         state = ST_COMMAND;
-                    else
-                        if ( tty_q_push((char *)&c, 1) != 1 )
+                    }
+                    else {
+                        int tty_ret;
+#if CONFIG_FORCE_INPUT_RN
+                        if (val_chr == '\r') {
+                            tty_ret = tty_q_push((char *)&val_chr, 1);
+                            val_chr = '\n';
+                            tty_ret = tty_q_push((char *)&val_chr, 1);
+                        }
+                        else {
+                            tty_ret = tty_q_push((char *)&val_chr, 1);
+                        }
+#else
+                        tty_ret = tty_q_push((char *)&val_chr, 1);
+#endif
+                        if (tty_ret != 1)
                             fd_printf(STO, "\x07");
+                    }
                     break;
                 default:
                     assert(0);
@@ -1603,7 +1622,7 @@ loop(void)
 
     skip_proc_STI:
 
-        // input: read from port
+        // input: read from tty port
 #if CONFIG_ENABLE_MULTI_FD
         if ( FD_ISSET(tty_fd, &misc_msg.rd_set) )
 #else
@@ -1623,12 +1642,12 @@ loop(void)
                 if ( errno != EAGAIN && errno != EWOULDBLOCK )
                     fatal("read from port failed: %s", strerror(errno));
             } else {
-                int i;
+                int loop_cnt;
                 char *bmp = &buff_map[0];
 
-                for (i = 0; i < n; i++) {
-                    if (buff_rd[i] == '\r') {
-                        buff_rd[i] = '\n';
+                for (loop_cnt = 0; loop_cnt < n; loop_cnt++) {
+                    if (buff_rd[loop_cnt] == '\r') {
+                        buff_rd[loop_cnt] = '\n';
                     }
                 }
 
@@ -1640,14 +1659,31 @@ loop(void)
 #if 0 // write log to rd_fd to file
                 writen_ni(misc_msg.rd_fd[1], buff_rd, n);
 #endif
-                for (i = 0; i < n; i++) {
-                    bmp += do_map(bmp, opts.imap, buff_rd[i]);
+                for (loop_cnt = 0; loop_cnt < n; loop_cnt++) {
+                    bmp += do_map(bmp, opts.imap, buff_rd[loop_cnt]);
                 }
                 n = bmp - buff_map;
-                if ( writen_ni(STO, buff_map, n) < n )
+#if CONFIG_FORCE_INPUT_RN
+                loop_cnt = 0;
+                while (loop_cnt < n) {
+                    if (buff_map[loop_cnt] == '\n') {
+                        buff_map[loop_cnt] = '\r';
+                        writen_ni(STO, buff_map + loop_cnt, 1);
+                        buff_map[loop_cnt] = '\n';
+                    }
+                    if ( writen_ni(STO, buff_map + loop_cnt, 1) < 1 ) {
+                        fatal("write to stdout failed: %s", strerror(errno));
+                    }
+                    loop_cnt++;
+                }
+#else
+                if ( writen_ni(STO, buff_map, n) < n ) {
                     fatal("write to stdout failed: %s", strerror(errno));
+                }
+#endif
             }
         }
+
         // output: Write to terminal port
 #if CONFIG_ENABLE_MULTI_FD
         if ( FD_ISSET(tty_fd, &misc_msg.wr_set) )
