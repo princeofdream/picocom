@@ -51,6 +51,8 @@
 #define _GNU_SOURCE
 #endif /* ifndef _GNU_SOURCE */
 
+#define CONFIG_ENABLE_MULTI_FD 1
+
 #include <getopt.h>
 
 #include <fdio.h>
@@ -1411,15 +1413,16 @@ void *msgs_wr_routine(void *param)
 	struct misc_msg_t *msgs = (struct misc_msg_t*)param;
 	char msgs_buf[1024];
 
-#if 0
+#if 1
 	while (1) {
 		read(msgs->wr_fd[0], msgs_buf, sizeof(msgs_buf));
-		printf("[ %d ] msg read: %s\n", __LINE__, msgs_buf);
+		plogi("[ %d ] msg read: %s\n", __LINE__, msgs_buf);
 	}
 #endif
 	return NULL;
 }
 
+// read from terminal and write to file
 void *msgs_rd_routine(void *param)
 {
 	struct misc_msg_t *misc_msg = (struct misc_msg_t*)param;
@@ -1464,19 +1467,13 @@ loop(void)
         ST_TRANSPARENT
     } state;
 	enum le_reason le_ret = LE_SIGNAL;
-#if 0
-    fd_set rdset, wrset;
-#else
+#if CONFIG_ENABLE_MULTI_FD
 	struct misc_msg_t misc_msg;
+#else
+    fd_set rdset, wrset;
 #endif
     int r, n;
     int stdin_closed;
-
-#if 0
-	struct timeval st_tv;
-	struct tm *st_tm;
-	char st_log_path[1024];
-#endif
 
     state = ST_TRANSPARENT;
     if ( ! opts.exit )
@@ -1484,53 +1481,38 @@ loop(void)
     else
         stdin_closed = 1;
 
-#if 1
+#if CONFIG_ENABLE_MULTI_FD
 	misc_msg.index = 1;
 	pipe(misc_msg.wr_fd);
 	pipe(misc_msg.rd_fd);
-	pthread_create(&(misc_msg.wr_pthread_id), NULL,
-			msgs_wr_routine, &misc_msg);
-	pthread_create(&(misc_msg.rd_pthread_id), NULL,
-			msgs_rd_routine, &misc_msg);
+    pthread_create(&(misc_msg.wr_pthread_id), NULL,
+            msgs_wr_routine, &misc_msg);
+	// pthread_create(&(misc_msg.rd_pthread_id), NULL,
+	//         msgs_rd_routine, &misc_msg);
 #endif
 
-	start_log_server(NULL);
+    start_log_server(NULL);
 
-#if 0
-	gettimeofday(&st_tv, NULL);
-	st_tm = localtime(&st_tv.tv_sec);
-	memset(st_log_path,0x0,sizeof(st_log_path));
-	sprintf(st_log_path,"%s/logs/log_ppcom_%d%02d%02d_%02d%02d%02d.log",
-			getenv("HOME"),
-			st_tm->tm_year+1900,st_tm->tm_mon+1,st_tm->tm_mday,
-			st_tm->tm_hour,st_tm->tm_min,st_tm->tm_sec);
-
-	printf("get path: %s\n", st_log_path);
-	misc_msg.fd = open(st_log_path, O_RDWR|O_APPEND|O_CREAT, 0644);
-#endif
     while ( ! sig_exit ) {
         struct timeval tv, *ptv;
 
         ptv = NULL;
-#if 0	// by jamesl optimize rd/wr fd set
-        FD_ZERO(&rdset);
-        FD_ZERO(&wrset);
-#else
+#if CONFIG_ENABLE_MULTI_FD	// by jamesl optimize rd/wr fd set
         FD_ZERO(&misc_msg.rd_set);
         FD_ZERO(&misc_msg.wr_set);
-#endif
-#if 0	// by jamesl optimize rd/wr fd set
-        if ( ! stdin_closed ) FD_SET(STI, &rdset);
-        if ( ! opts.exit ) FD_SET(tty_fd, &rdset);
-#else
         if ( ! stdin_closed ) FD_SET(STI, &misc_msg.rd_set);
         if ( ! opts.exit ) FD_SET(tty_fd, &misc_msg.rd_set);
+#else
+        FD_ZERO(&rdset);
+        FD_ZERO(&wrset);
+        if ( ! stdin_closed ) FD_SET(STI, &rdset);
+        if ( ! opts.exit ) FD_SET(tty_fd, &rdset);
 #endif
         if ( tty_q.len ) {
-#if 0	// by jamesl optimize rd/wr fd set
-            FD_SET(tty_fd, &wrset);
-#else
+#if CONFIG_ENABLE_MULTI_FD	// by jamesl optimize rd/wr fd set
             FD_SET(tty_fd, &misc_msg.wr_set);
+#else
+            FD_SET(tty_fd, &wrset);
 #endif
         } else {
             if ( opts.exit_after >= 0 ) {
@@ -1539,19 +1521,15 @@ loop(void)
             } else if ( stdin_closed ) {
                 /* stdin closed, output queue empty, and no
                    idle timeout: Exit. */
-#if 0
-                return LE_STDIN;
-#else
 				le_ret = LE_STDIN;
 				goto loop_end;
-#endif
             }
         }
 
-#if 0	// by jamesl optimize rd/wr fd set
-        r = select(tty_fd + 1, &rdset, &wrset, NULL, ptv);
-#else
+#if CONFIG_ENABLE_MULTI_FD	// by jamesl optimize rd/wr fd set
         r = select(tty_fd + 1, &misc_msg.rd_set, &misc_msg.wr_set, NULL, ptv);
+#else
+        r = select(tty_fd + 1, &rdset, &wrset, NULL, ptv);
 #endif
         if ( r < 0 )  {
             if ( errno == EINTR )
@@ -1561,15 +1539,15 @@ loop(void)
         }
         if ( r == 0 ) {
             /* Idle timeout expired */
-#if 0
-            return LE_IDLE;
-#else
 			le_ret = LE_IDLE;
 			goto loop_end;
-#endif
         }
 
+#if CONFIG_ENABLE_MULTI_FD
         if ( FD_ISSET(STI, &misc_msg.rd_set) )
+#else
+        if ( FD_ISSET(STI, &rdset) )
+#endif
 		{
             /* read from terminal */
             char buff_rd[STI_RD_SZ];
@@ -1603,12 +1581,8 @@ loop(void)
                         /* process command key */
                         if ( do_command(c) ) {
                             /* ppcom exit */
-#if 0
-                            return LE_CMD;
-#else
 							le_ret = LE_CMD;
 							goto loop_end;
-#endif
 						}
                     }
                     state = ST_TRANSPARENT;
@@ -1626,10 +1600,15 @@ loop(void)
                 }
             }
         }
+
     skip_proc_STI:
 
         // input: read from port
+#if CONFIG_ENABLE_MULTI_FD
         if ( FD_ISSET(tty_fd, &misc_msg.rd_set) )
+#else
+        if ( FD_ISSET(tty_fd, &rdset) )
+#endif
 		{
             char buff_rd[TTY_RD_SZ];
             char buff_map[TTY_RD_SZ * M_MAXMAP];
@@ -1646,24 +1625,22 @@ loop(void)
             } else {
                 int i;
                 char *bmp = &buff_map[0];
-                if ( opts.log_filename )
-                    if (buff_rd[0] == '\r') {
-                        buff_rd[0] = '\n';
-                    }
-                    if ( writen_ni(log_fd, buff_rd, n) < n )
-                        fatal("write to logfile failed: %s", strerror(errno));
-#if 0 // write log to rd_fd to file
-				if (misc_msg.index > 0) {
-                    if (buff_rd[0] == '\r') {
-                        buff_rd[0] = '\n';
-                    }
-                    writen_ni(misc_msg.rd_fd[1], buff_rd, n);
-				}
-#endif
+
                 for (i = 0; i < n; i++) {
                     if (buff_rd[i] == '\r') {
                         buff_rd[i] = '\n';
                     }
+                }
+
+                if ( opts.log_filename ) {
+                    if ( writen_ni(log_fd, buff_rd, n) < n ) {
+                        fatal("write to logfile failed: %s", strerror(errno));
+                    }
+                }
+#if 0 // write log to rd_fd to file
+                writen_ni(misc_msg.rd_fd[1], buff_rd, n);
+#endif
+                for (i = 0; i < n; i++) {
                     bmp += do_map(bmp, opts.imap, buff_rd[i]);
                 }
                 n = bmp - buff_map;
@@ -1671,9 +1648,12 @@ loop(void)
                     fatal("write to stdout failed: %s", strerror(errno));
             }
         }
-
         // output: Write to terminal port
+#if CONFIG_ENABLE_MULTI_FD
         if ( FD_ISSET(tty_fd, &misc_msg.wr_set) )
+#else
+        if ( FD_ISSET(tty_fd, &wrset) )
+#endif
 		{
             int sz;
             sz = (tty_q.len < tty_write_sz) ? tty_q.len : tty_write_sz;
@@ -1694,7 +1674,7 @@ loop(void)
 
 loop_end:
 
-	stop_log_server(NULL);
+    stop_log_server(NULL);
 
 #if 0
     return LE_SIGNAL;
