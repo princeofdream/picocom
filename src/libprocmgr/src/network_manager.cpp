@@ -29,7 +29,7 @@ network_manager::network_manager()
 	static network_utils m_net_util;
 
 	m_net_util.getIfaceList(&iface_list);
-	plog("iface list: \n%s\n", iface_list);
+	plogi("iface list: \n%s\n", iface_list);
 	if (iface_list == NULL) {
 		return;
 	}
@@ -86,11 +86,11 @@ network_manager::manager_network_status(void* param)
 	msockfd = STDIN_FILENO;
 	fd_max = PROCMGR_MAX_VAL(msockfd, fd_event) + 1;
 
-	pdbg("fd_event: %d, msockfd: %d, fd_max: %d", fd_event, msockfd, fd_max);
+	plogd("fd_event: %d, msockfd: %d, fd_max: %d", fd_event, msockfd, fd_max);
 
 	if (mparam != NULL) {
 		if ((mparam->flag & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX) {
-			pdbg("thread unlock.");
+			plogd("thread unlock.");
 			pthread_mutex_unlock(mparam->mlock);
 		}
 	}
@@ -105,7 +105,7 @@ network_manager::manager_network_status(void* param)
 		// set timeval NULL to block
 		sel_ret = select(fd_max, &rd_set, NULL, NULL , NULL);
 		if (sel_ret < 0 ) {
-			pdbg();
+			plogd();
 			return -EINVAL;
 		}
 
@@ -113,10 +113,10 @@ network_manager::manager_network_status(void* param)
 		{
 			memset(buffer,0x0,sizeof(buffer));
 			rlen = read(msockfd, buffer, sizeof(buffer) - 1);
-			pdbg("get msg %d, len:[%d] : %s", i0, rlen, buffer);
+			plogd("get msg %d, len:[%d] : %s", i0, rlen, buffer);
 
 			if(rlen <= 0 && sel_ret == 1) {
-				pdbg("socket closed!, rlen: %d", rlen);
+				plogd("socket closed!, rlen: %d", rlen);
 				break;
 			}
 
@@ -125,7 +125,7 @@ network_manager::manager_network_status(void* param)
 				wlen = write(STDOUT_FILENO, buffer, strlen(buffer) + 1);
 			else
 				wlen = write(msockfd, buffer, strlen(buffer) + 1);
-			pdbg("send msg<%d>, len:[%d] : %s", i0, wlen, buffer);
+			plogd("send msg<%d>, len:[%d] : %s", i0, wlen, buffer);
 
 		}
 		else if (FD_ISSET(fd_event, &rd_set))
@@ -137,13 +137,13 @@ network_manager::manager_network_status(void* param)
 				wlen = write(STDOUT_FILENO, buffer, strlen(buffer) + 1);
 			else
 				wlen = write(msockfd, buffer, strlen(buffer) + 1);
-			pdbg("send msg %d, len:[%d] : %s", i0, wlen, buffer);
+			plogd("send msg %d, len:[%d] : %s", i0, wlen, buffer);
 			continue;
 		}
 
 		if(rlen <= 0 && sel_ret == 1)
 		{
-			pdbg("socket closed!, rlen: %d", rlen);
+			plogd("socket closed!, rlen: %d", rlen);
 			break;
 		}
 		i0++;

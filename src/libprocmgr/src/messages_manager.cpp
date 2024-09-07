@@ -123,9 +123,9 @@ messages_manager::cli_proc_messages(int sockfd, char* msg, char** value)
 
 	sscanf(msg, "%s %s %s", get_msg[0], get_msg[1], get_msg[2]);
 
-	pdbg("get[0]: %s", get_msg[0]);
-	pdbg("get[1]: %s", get_msg[1]);
-	pdbg("get[2]: %s", get_msg[2]);
+	plogd("get[0]: %s", get_msg[0]);
+	plogd("get[1]: %s", get_msg[1]);
+	plogd("get[2]: %s", get_msg[2]);
 
 	mcli_param.sockfd = sockfd;
 	mcli_param.value  = value;

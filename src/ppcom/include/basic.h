@@ -74,37 +74,5 @@
 #ifndef MAX_VAL
 	#define MAX_VAL(var1, var2) ((var1 > var2)? var1:var2)
 #endif
-// this is used to output log to STDIN
-#define log(frm,args...) printf(frm,##args)
-
-#ifdef DEBUG
-	#ifdef ANDROID
-		#define dbg(frm,args...) ALOGD("<%s:%d>---" frm "\n",__FUNCTION__,__LINE__,##args)
-		#define loge(frm,args...) ALOGE(frm,##args)
-		#define logd(frm,args...) ALOGD(frm,##args)
-	#else
-		#define dbg(frm,args...) printf("<%s:%d>---\n" frm "\n",__FUNCTION__,__LINE__,##args)
-		#define loge(frm,args...) printf(frm"\n",##args)
-		// #define logd(frm,args...) printf(frm"\n",##args)
-		#define log(frm,args...) printf(frm"\n",##args)
-		#define logd(frm,args...) printf("<%s:%d>---\n" frm "\n",__FUNCTION__,__LINE__,##args)
-	#endif
-
-#else
-	#ifdef ANDROID
-		// #define pdbg(frm, args...) while(0){;}
-		#define dbg(frm,args...) printf(frm"\n",##args)
-		#define loge(frm,args...) ALOGE(frm,##args)
-		#define logd(frm,args...) ALOGD(frm,##args)
-	#else
-		// #define pdbg(frm, args...) while(0){;}
-		#define dbg(frm,args...) printf(frm"\n",##args)
-		#define loge(frm,args...) printf(frm"\n",##args)
-		#define logd(frm,args...) printf(frm"\n",##args)
-	#endif
-#endif
-
-
-
 
 #endif /* ifndef __BASIC_HEADER__ */

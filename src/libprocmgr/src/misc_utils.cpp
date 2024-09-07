@@ -200,27 +200,37 @@ misc_utils::flag_to_string(uint32_t flag, const char* value)
 	if (flag == FLAG_DEFAULT)
 		sprintf(flag_str, "FLAG_DEFAULT");
 
-	if ((flag & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX)
+	if ((flag & FLAG_SYNC_MUTEX) == FLAG_SYNC_MUTEX) {
 		sprintf(flag_str, "%s FLAG_SYNC_MUTEX |", flag_str);
-	if ((flag & FLAG_BLOCK) == FLAG_BLOCK)
+    }
+	if ((flag & FLAG_BLOCK) == FLAG_BLOCK) {
 		sprintf(flag_str, "%s FLAG_BLOCK | ", flag_str);
-	if ((flag & FLAG_WITH_PROCESS) == FLAG_WITH_PROCESS)
+    }
+	if ((flag & FLAG_WITH_PROCESS) == FLAG_WITH_PROCESS) {
 		sprintf(flag_str, "%s FLAG_WITH_PROCESS |", flag_str);
-	if ((flag & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD)
+    }
+	if ((flag & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD) {
 		sprintf(flag_str, "%s FLAG_WITH_PTHREAD |", flag_str);
-	if ((flag & FLAG_WITH_IP) == FLAG_WITH_IP)
+    }
+	if ((flag & FLAG_WITH_IP) == FLAG_WITH_IP) {
 		sprintf(flag_str, "%s FLAG_WITH_IP |", flag_str);
-	if ((flag & FLAG_WITH_REPLY) == FLAG_WITH_REPLY)
+    }
+	if ((flag & FLAG_WITH_REPLY) == FLAG_WITH_REPLY) {
 		sprintf(flag_str, "%s FLAG_WITH_REPLY |", flag_str);
-	if ((flag & FLAG_MSG) == FLAG_MSG)
+    }
+	if ((flag & FLAG_MSG) == FLAG_MSG) {
 		sprintf(flag_str, "%s FLAG_MSG |", flag_str);
-	if ((flag & FLAG_MSG_ASYNC) == FLAG_MSG_ASYNC)
+    }
+	if ((flag & FLAG_MSG_ASYNC) == FLAG_MSG_ASYNC) {
 		sprintf(flag_str, "%s FLAG_MSG_ASYNC |", flag_str);
+    }
 
-	if (value != NULL)
+	if (value != NULL) {
 		plogd("%s flags: < %s >", value, flag_str);
-	else
+    }
+    else {
 		plogd("flags: < %s >", flag_str);
+    }
 }
 
 

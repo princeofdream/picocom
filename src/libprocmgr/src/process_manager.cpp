@@ -40,7 +40,7 @@ process_manager::start_process(void* param)
 	proc_conf *mparam = (proc_conf*)param;
 	int ret;
 
-	plog("fork, child pid: < %d >,\tcurrent pid: < %d >,\tparent pid: < %d >.\n", mp_id, getpid(), getppid());
+	plogd("fork, child pid: < %d >,\tcurrent pid: < %d >,\tparent pid: < %d >.\n", mp_id, getpid(), getppid());
 	ret = pipe(pipefd);
 
 	mp_id = fork();

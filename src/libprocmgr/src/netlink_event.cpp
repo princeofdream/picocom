@@ -108,8 +108,7 @@ netlink_event::read_event(int (*msg_handler)(struct sockaddr_nl *, struct nlmsgh
         if (errno == EWOULDBLOCK || errno == EAGAIN)
             return ret;
 
-        pdbg("read_netlink: Error recvmsg: %d", status);
-        ploge("read_netlink: Error: ");
+        ploge("read_netlink: Error recvmsg: %d", status);
         return status;
     }
 

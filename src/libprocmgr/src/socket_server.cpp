@@ -126,7 +126,6 @@ socket_server::socket_server ()
 
 socket_server::~socket_server ()
 {
-	plogd("..................");
 	if (servfd > 0)
 		close(servfd);
 
@@ -221,7 +220,7 @@ socket_server::setup_server(void)
 {
 	int ret;
 
-	pdbg("Enter: %s", __FUNCTION__);
+	plogd("Enter: %s", __FUNCTION__);
 
 	servpid = getpid();
 	servfd = socket(AF_LOCAL, SOCK_STREAM, 0);
@@ -259,7 +258,7 @@ socket_server::start_server(void* param)
 	struct sigaction act;
 	proc_conf *mparam = (proc_conf*)param;
 
-	pdbg("Enter: %s", __FUNCTION__);
+	plogd("Enter: %s", __FUNCTION__);
 	if (mparam == NULL) {
 		ploge("param is NULL, abort!");
 		return -EINVAL;
@@ -336,7 +335,7 @@ socket_server::start_server(void* param)
 		i0++;
 	}
 
-	pdbg("End of service");
+	plogd("End of service");
 
 	if((mparam->flag & FLAG_WITH_PTHREAD) == FLAG_WITH_PTHREAD)
 	{
@@ -403,7 +402,7 @@ socket_server::setup_ip_client(void* param)
 			port = mserv_conf->port;
 	}
 
-	pdbg("Client connect ---> %s:%d <---", ipaddr, port);
+	plogd("Client connect ---> %s:%d <---", ipaddr, port);
 
 	memset(&client_ip_addr,0,sizeof(client_ip_addr));
 	client_ip_addr.sin_family=AF_INET;
@@ -419,7 +418,7 @@ socket_server::setup_ip_client(void* param)
 
 
 
-	pdbg("connect to server: %s", "");
+	plogd("connect to server: %s", "");
 	ret = connect(clientfd,(struct sockaddr *)&client_ip_addr,sizeof(struct sockaddr));
 	if (ret < 0) {
 		ploge("fail to connect");
@@ -446,7 +445,7 @@ socket_server::setup_client(void)
 	strncpy(clientaddr.sun_path, serv_sock_path , sizeof(clientaddr.sun_path)-1);
 	len = sizeof(clientaddr);
 
-	pdbg("Client connect ---> %s <---", clientaddr.sun_path);
+	plogd("Client connect ---> %s <---", clientaddr.sun_path);
 	ret = connect (clientfd, (struct sockaddr *)&clientaddr, len);
 	if (ret < 0)
 	{

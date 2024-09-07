@@ -1,6 +1,7 @@
 
 project(ppcom)
 
+add_definitions("-std=c++14")
 link_directories(
     ${CMAKE_BINARY_DIR}/src/libprocmgr
     ./

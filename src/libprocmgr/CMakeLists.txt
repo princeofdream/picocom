@@ -1,6 +1,7 @@
 
 project(procmgr)
 
+add_definitions("-std=c++14")
 link_directories(
 )
 

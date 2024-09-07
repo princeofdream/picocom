@@ -28,6 +28,11 @@ serv_conf         mserv_conf;
 service_manager   mserv_mgr;
 message_param     mmsg;
 
+void srvmgr_print_usage(const char *pname)
+{
+    plogw("%s -s /tmp/proc-x.sock\n", pname);
+}
+
 int main(int argc, char *argv[])
 {
 	int flag = FLAG_DEFAULT;
@@ -40,28 +45,28 @@ int main(int argc, char *argv[])
 		ch = getopt(argc, argv, "tip:hs:");
 		if (ch < 0)
 			break;
-		logd("optind: %d, ch: %#x\n", optind, ch);
+		plogd("optind: %d, ch: %#x\n", optind, ch);
 		switch (ch)
 		{
 		case 't':
-			logd("Start in pthread mode\n");
+			plogi("Start in pthread mode\n");
 			flag |= FLAG_WITH_PTHREAD;
 			break;
 		case 'i':
-			logd("Start in ip mode\n");
+			plogi("Start in ip mode\n");
 			flag |= FLAG_WITH_IP;
 			break;
 		case 'p':
-			logd("Start with IP port %s\n", optarg);
+			plogi("Start with IP port %s\n", optarg);
 			mserv_conf.port = atoi(optarg);
 			break;
 		case 's':
-			logd("Start with socket %s\n", optarg);
+			plogi("Start with socket %s\n", optarg);
 			memset(mserv_conf.socket_path, 0x0,sizeof(mserv_conf.socket_path));
 			sprintf(mserv_conf.socket_path, "%s", optarg);
 			break;
 		case 'h':
-			// srvmgr_print_usage();
+            srvmgr_print_usage(argv[0]);
 			exit(0);
 		}
 	}

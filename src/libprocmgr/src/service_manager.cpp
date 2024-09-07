@@ -85,7 +85,7 @@ service_manager::start_service_manager_proc(void* param)
 	else if (mserv->service_type == MGR_SERVICE_CLI)
 		mserv->start_client_manager(&mproc_param);
 	else
-		plog("service type incorrect, Do not start manager service.\n");
+		plogd("service type incorrect, Do not start manager service.\n");
 
 	plogd("service done, quit...");
 	if((mparam->servcfg != NULL) && (mserv_conf->serv_cls == NULL) && (mserv != NULL)) {
@@ -485,7 +485,7 @@ service_manager::respond_cmd_async(int sockfd, void* param)
 		// set timeval NULL to block
 		sel_ret = select(fd_max, &rd_set, NULL, NULL , NULL);
 		if (sel_ret < 0 ) {
-			pdbg();
+			plogd();
 			return -EINVAL;
 		}
 

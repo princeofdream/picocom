@@ -31,15 +31,11 @@ log_serv_cmd_handler(void *param)
 {
 	message_param *msg_param = (message_param*)param;
 
-	logd();
 	if (param == NULL) {
-		loge("message param is NULL");
+		ploge("message param is NULL");
 		return NULL;
 	}
-	// if (msg_param->sub_param == NULL)
-	//     loge("custon param is NULL");
 
-	logd();
 	if (strcmp(msg_param->cmd, "ack") == 0) {
 		sprintf(msg_param->cmd, "%s %s", msg_param->cmd, "ok");
 	} else if (strcmp(msg_param->cmd, "quit") == 0) {
@@ -49,7 +45,6 @@ log_serv_cmd_handler(void *param)
 		return NULL;
 	}
 
-	logd();
 	return NULL;
 }
 
@@ -72,7 +67,7 @@ send_request_cmd(message_param *param)
 
 	i0 = 0;
 
-	logd("[%s:%d] send message: %s", __func__, __LINE__, msg_param->cmd);
+	plogd("[%s:%d] send message: %s", __func__, __LINE__, msg_param->cmd);
 	wlen = write(msockfd, msg_param->cmd, strlen(msg_param->cmd)+1);
 	while(true) {
 		FD_ZERO(&rd_set);
@@ -88,7 +83,7 @@ send_request_cmd(message_param *param)
 		{
 			memset(buffer,0x0,sizeof(buffer));
 			scanf("%s", buffer);
-			logd("async sent msg %d, len:[%d] : %s", i0, strlen(buffer), buffer);
+			plogd("async sent msg %d, len:[%d] : %s", i0, strlen(buffer), buffer);
 			write(msockfd, buffer, strlen(buffer) + 1);
 		}
 
@@ -133,25 +128,23 @@ void start_log_server(void* param)
 
 #endif
 	// register_serv_handler(void *(*proc_func)(void* param), void* param)
-	logd("============== start_service_manager_proc <done> =================");
+	plogd("============== start_service_manager_proc <done> =================");
 
 }
 
 void stop_log_server(void* param)
 {
-	logd("============== stop_service_manager_proc <done> =================");
+	plogd("============== stop_service_manager_proc <done> =================");
 	return;
 }
 
 #else
 void start_log_server(void* param)
 {
-	// pinfo("=============== no log server build-in ====================\r\n");
 	return;
 }
 void stop_log_server(void* param)
 {
-	// pinfo("=============== no log server build-in ====================\r\n");
 	return;
 }
 #endif
