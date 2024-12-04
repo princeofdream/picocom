@@ -14,7 +14,7 @@ HISTFILE := .ppcom_history
 
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := src/linenoise-1.0/linenoise.c
+LOCAL_SRC_FILES := src/linenoise.c
 
 LOCAL_MODULE := linenoise
 

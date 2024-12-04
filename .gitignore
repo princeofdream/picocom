@@ -1,3 +1,4 @@
 *.o
 *~
-/picocom
+/ppcom
+output

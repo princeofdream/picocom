@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 2.8)
+
+project(ppcom_main)
+
+set(CMAKE_CXX_STANDARD 14)
+set(VERSION 1.0.0)
+add_definitions(-DVERSION_STR="3.2a")
+
+add_subdirectory(src)
+
+# install(TARGETS ${PROJECT_NAME}
+#         RUNTIME DESTINATION bin
+#         LIBRARY DESTINATION lib
+#         ARCHIVE DESTINATION lib
+#         INCLUDES DESTINATION include
+#         MANIFEST DESTINATION share
+#         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+#         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+#         ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+#         INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include
+# )
+
+

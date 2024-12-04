@@ -34,8 +34,8 @@ CPPFLAGS += -DUSE_FLOCK
 HISTFILE = .ppcom_history
 CPPFLAGS += -DHISTFILE=\"$(HISTFILE)\" \
 	    -DLINENOISE
-OBJS += src/linenoise-1.0/linenoise.o
-src/linenoise-1.0/linenoise.o : src/linenoise-1.0/linenoise.c src/linenoise-1.0/linenoise.h
+OBJS += src/linenoise.o
+src/linenoise.o : src/linenoise.c src/linenoise.h
 
 ## Comment this in to enable (force) custom baudrate support
 ## even on systems not enabled by default.
@@ -97,7 +97,6 @@ ppcom.1.pdf : docs/ppcom.1
 
 clean:
 	rm -f src/*.o
-	rm -f sec/linenoise-1.0/*.o
 	rm -f *~
 	rm -f \#*\#
 

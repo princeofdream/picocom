@@ -52,7 +52,7 @@
 #include "split.h"
 #include "term.h"
 #ifdef LINENOISE
-#include "linenoise-1.0/linenoise.h"
+#include "linenoise.h"
 #endif
 
 #include "custbaud.h"
