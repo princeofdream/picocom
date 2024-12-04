@@ -84,27 +84,28 @@ const char *flow_str[] = {
 #define KEYC(k) ((k) | 0x60)
 /* printable character to control-key */
 #define CKEY(c) ((c) & 0x1f)
+#define NORKEY(c) (c)
 
-#define KEY_EXIT    CKEY('x') /* exit picocom */
-#define KEY_QUIT    CKEY('q') /* exit picocom without reseting port */
-#define KEY_PULSE   CKEY('p') /* pulse DTR */
-#define KEY_TOG_DTR CKEY('t') /* toggle DTR */
-#define KEY_TOG_RTS CKEY('g') /* toggle RTS */
-#define KEY_BAUD    CKEY('b') /* set baudrate */
-#define KEY_BAUD_UP CKEY('u') /* increase baudrate (up) */
-#define KEY_BAUD_DN CKEY('d') /* decrase baudrate (down) */
-#define KEY_FLOW    CKEY('f') /* change flowcntrl mode */
-#define KEY_PARITY  CKEY('y') /* change parity mode */
-#define KEY_BITS    CKEY('i') /* change number of databits */
-#define KEY_STOP    CKEY('j') /* change number of stopbits */
-#define KEY_LECHO   CKEY('c') /* toggle local echo */
-#define KEY_STATUS  CKEY('v') /* show program options */
-#define KEY_HELP    CKEY('h') /* show help (same as [C-k]) */
-#define KEY_KEYS    CKEY('k') /* show available command keys */
-#define KEY_SEND    CKEY('s') /* send file */
-#define KEY_RECEIVE CKEY('r') /* receive file */
-#define KEY_HEX     CKEY('w') /* write hex */
-#define KEY_BREAK   CKEY('\\') /* break */
+#define KEY_EXIT    NORKEY('x') /* exit picocom */
+#define KEY_QUIT    NORKEY('q') /* exit picocom without reseting port */
+#define KEY_PULSE   NORKEY('p') /* pulse DTR */
+#define KEY_TOG_DTR NORKEY('t') /* toggle DTR */
+#define KEY_TOG_RTS NORKEY('g') /* toggle RTS */
+#define KEY_BAUD    NORKEY('b') /* set baudrate */
+#define KEY_BAUD_UP NORKEY('u') /* increase baudrate (up) */
+#define KEY_BAUD_DN NORKEY('d') /* decrase baudrate (down) */
+#define KEY_FLOW    NORKEY('f') /* change flowcntrl mode */
+#define KEY_PARITY  NORKEY('y') /* change parity mode */
+#define KEY_BITS    NORKEY('i') /* change number of databits */
+#define KEY_STOP    NORKEY('j') /* change number of stopbits */
+#define KEY_LECHO   NORKEY('c') /* toggle local echo */
+#define KEY_STATUS  NORKEY('v') /* show program options */
+#define KEY_HELP    NORKEY('h') /* show help (same as [C-k]) */
+#define KEY_KEYS    NORKEY('k') /* show available command keys */
+#define KEY_SEND    NORKEY('s') /* send file */
+#define KEY_RECEIVE NORKEY('r') /* receive file */
+#define KEY_HEX     NORKEY('w') /* write hex */
+#define KEY_BREAK   NORKEY('\\') /* break */
 
 /**********************************************************************/
 
