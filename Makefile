@@ -9,7 +9,7 @@ LD = $(CC)
 LDFLAGS ?= -g
 LDLIBS ?=
 
-all: picocom
+all: ppcom
 OBJS =
 
 ## This is the maximum size (in bytes) the output (e.g. copy-paste)
@@ -31,11 +31,11 @@ CPPFLAGS += -DUSE_FLOCK
 #CPPFLAGS += -DUUCP_LOCK_DIR=\"$(UUCP_LOCK_DIR)\"
 
 ## Comment these out to disable "linenoise"-library support
-HISTFILE = .picocom_history
+HISTFILE = .ppcom_history
 CPPFLAGS += -DHISTFILE=\"$(HISTFILE)\" \
 	    -DLINENOISE
-OBJS += linenoise-1.0/linenoise.o
-linenoise-1.0/linenoise.o : linenoise-1.0/linenoise.c linenoise-1.0/linenoise.h
+OBJS += src/linenoise-1.0/linenoise.o
+src/linenoise-1.0/linenoise.o : src/linenoise-1.0/linenoise.c src/linenoise-1.0/linenoise.h
 
 ## Comment this in to enable (force) custom baudrate support
 ## even on systems not enabled by default.
@@ -49,25 +49,32 @@ linenoise-1.0/linenoise.o : linenoise-1.0/linenoise.c linenoise-1.0/linenoise.h
 #CPPFLAGS += -DNO_HELP
 
 
-OBJS += picocom.o term.o fdio.o split.o custbaud.o termios2.o custbaud_bsd.o
-picocom : $(OBJS)
+OBJS += src/ppcom.o
+OBJS += src/term.o
+OBJS += src/fdio.o
+OBJS += src/split.o
+OBJS += src/custbaud.o
+OBJS += src/termios2.o
+OBJS += src/custbaud_bsd.o
+
+ppcom : $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
-picocom.o : picocom.c term.h fdio.h split.h custbaud.h
-term.o : term.c term.h termios2.h custbaud_bsd.h custbaud.h
-split.o : split.c split.h
-fdio.o : fdio.c fdio.h
-termios2.o : termios2.c termios2.h termbits2.h custbaud.h
-custbaud_bsd.o : custbaud_bsd.c custbaud_bsd.h custbaud.h
-custbaud.o : custbaud.c custbaud.h
+ppcom.o : src/ppcom.c src/term.h src/fdio.h src/split.h src/custbaud.h
+term.o : src/term.c src/term.h src/termios2.h src/custbaud_bsd.h src/custbaud.h
+split.o : src/split.c src/split.h
+fdio.o : src/fdio.c src/fdio.h
+termios2.o : src/termios2.c src/termios2.h src/termbits2.h src/custbaud.h
+custbaud_bsd.o : src/custbaud_bsd.c src/custbaud_bsd.h src/custbaud.h
+custbaud.o : src/custbaud.c src/custbaud.h
 
 .c.o :
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 
-doc : picocom.1.html picocom.1 picocom.1.pdf
+doc : docs/ppcom.1.html docs/ppcom.1 docs/ppcom.1.pdf
 
-picocom.1 : picocom.1.md
+ppcom.1 : docs/ppcom.1.md
 	sed 's/\*\*\[/\*\*/g;s/\]\*\*/\*\*/g' $? \
 	| pandoc -s -t man \
 	    -Vfooter="Picocom $(VERSION)" -Vdate="`date -I`" \
@@ -75,7 +82,7 @@ picocom.1 : picocom.1.md
 	    -Vhyphenate='' \
 	    -o $@
 
-picocom.1.html : picocom.1.md
+ppcom.1.html : docs/ppcom.1.md
 	pandoc -s -t html \
 	    --template ~/.pandoc/tmpl/manpage.html \
 	    -c ~/.pandoc/css/normalize-noforms.css \
@@ -84,22 +91,21 @@ picocom.1.html : picocom.1.md
 	    -Vversion="v$(VERSION)" -Vdate="`date -I`" \
 	    -o $@ $?
 
-picocom.1.pdf : picocom.1
+ppcom.1.pdf : docs/ppcom.1
 	groff -man -Tpdf $? > $@
 
 
 clean:
-	rm -f picocom.o term.o fdio.o split.o
-	rm -f linenoise-1.0/linenoise.o
-	rm -f custbaud.o termios2.o custbaud_bsd.o
+	rm -f src/*.o
+	rm -f sec/linenoise-1.0/*.o
 	rm -f *~
 	rm -f \#*\#
 
 distclean: clean
-	rm -f picocom
+	rm -f ppcom
 
 realclean: distclean
-	rm -f picocom.1
-	rm -f picocom.1.html
-	rm -f picocom.1.pdf
-	rm -f CHANGES
+	rm -f docs/ppcom.1
+	rm -f docs/ppcom.1.html
+	rm -f docs/ppcom.1.pdf
+

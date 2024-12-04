@@ -1,4 +1,4 @@
 #!/bin/sh
-exec picocom \
+exec ppcom \
     --send-cmd="ascii-xfr -senv -l5" \
     --receive-cmd="ascii-xfr -rnv" "$@"

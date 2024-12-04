@@ -1,7 +1,7 @@
-# Custom bash completion for picocom.
+# Custom bash completion for ppcom.
 #
 # Source this file like this:
-#     . <picocom-src-dir>/bash-completion/picocom
+#     . <ppcom-src-dir>/bash-completion/ppcom
 # Or arrange for it to be sourced by your ".bashrc",
 # Or copy it in /etc/bash_completion.d (it will be sourced automatically)
 #
@@ -34,7 +34,7 @@
 # USA
 #
 
-# _picocom_split_line
+# _ppcom_split_line
 #
 # Splits line into words. Splits line in almost exatcly the same way
 # as readline does it. Using this function, you can specify your own
@@ -54,7 +54,7 @@
 # "-s". If missing, default delimiters and separators are
 # used. Results are left in the "words" array.
 #
-function _picocom_split_line()
+function _ppcom_split_line()
 {
     local delimiters=$' \t\n'
     local separators=$'=><'
@@ -184,7 +184,7 @@ function _picocom_split_line()
     words+=( "$word" )
 }
 
-_picocom_split_line_debug()
+_ppcom_split_line_debug()
 {
     echo "------------" >> $DEBUG
     echo "[ $COMP_POINT ] $COMP_LINE" >> $DEBUG
@@ -197,7 +197,7 @@ _picocom_split_line_debug()
 
 # Remove quoting from $1. Fails if $1 includes (unescaped) characters
 # that can cause expansions.
-_picocom_dequote()
+_ppcom_dequote()
 {
     local quoted="$1"
     local i c c1 inside word
@@ -245,12 +245,12 @@ _picocom_dequote()
 
 # Remove character mappings that already appear in $cur. Results are
 # left in array "mapfilt"
-_picocom_filter_mappings()
+_ppcom_filter_mappings()
 {
     local IFS cur1 m c found
     local -a cura
 
-    cur1=$(_picocom_dequote "$cur") || return 1
+    cur1=$(_ppcom_dequote "$cur") || return 1
     IFS=$', \t'
     cura=( $cur1 )
     IFS=$' \t\n'
@@ -266,8 +266,8 @@ _picocom_filter_mappings()
     return 0
 }
 
-# Check if $1 is valid picocom option name
-_picocom_is_opt()
+# Check if $1 is valid ppcom option name
+_ppcom_is_opt()
 {
     local e match="$1"
     for e in "${opts[@]}"; do
@@ -276,8 +276,8 @@ _picocom_is_opt()
     return 1
 }
 
-# Custom completion function for picocom
-_picocom()
+# Custom completion function for ppcom
+_ppcom()
 {
     local cur cur0 cur1 prev
     local -a words opts baudrates mappings mapfilt
@@ -304,16 +304,16 @@ _picocom()
               spchex tabhex crhex lfhex 8bithex nrmhex )
 
     # We split the line ourselves. We don't use COMP_WORDS
-    _picocom_split_line
+    _ppcom_split_line
     cur="${words[-1]}"
     prev="${words[-2]}"
 
     # Handle option values given with "="
     if [[ $cur =~ "="+ ]]; then
-        _picocom_is_opt "$prev" && cur=
+        _ppcom_is_opt "$prev" && cur=
     fi
     if [[ $prev =~ "="+ ]]; then
-        _picocom_is_opt "${words[-3]}" && prev="${words[-3]}"
+        _ppcom_is_opt "${words[-3]}" && prev="${words[-3]}"
     fi
 
     # Complete option values
@@ -343,7 +343,7 @@ _picocom()
             return 0
             ;;        
         -I | --imap | -O | --omap | -E | --emap )
-            _picocom_filter_mappings || return 0
+            _ppcom_filter_mappings || return 0
             cur1=${cur##*[, $'\t']}
             cur0=${cur%"$cur1"}
             #echo "$cur0 | $cur1 |" >> $DEBUG
@@ -397,7 +397,7 @@ _picocom()
 }
 
 # Bind custom completion function to command
-complete -o default -o bashdefault -F _picocom picocom
+complete -o default -o bashdefault -F _ppcom ppcom
 
 # Local variables:
 # mode: sh

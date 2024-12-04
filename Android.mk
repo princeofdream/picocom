@@ -6,7 +6,7 @@ LOCAL_PATH := $(call my-dir)
 
 VERSION := 3.2a
 TTY_Q_SZ := 0
-HISTFILE := .picocom_history
+HISTFILE := .ppcom_history
 
 
 ##########################################################################
@@ -14,23 +14,23 @@ HISTFILE := .picocom_history
 
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := linenoise-1.0/linenoise.c
+LOCAL_SRC_FILES := src/linenoise-1.0/linenoise.c
 
 LOCAL_MODULE := linenoise
 
 include $(BUILD_STATIC_LIBRARY)
 
 ##########################################################################
-# picocom
+# ppcom
 
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
-    picocom.c \
-    term.c \
-    fdio.c \
-    split.c \
-    termios2.c
+    src/ppcom.c \
+    src/term.c \
+    src/fdio.c \
+    src/split.c \
+    src/termios2.c
 
 LOCAL_CFLAGS += -DVERSION_STR=\"$(VERSION)\"
 
@@ -54,6 +54,6 @@ LOCAL_CFLAGS += -DHISTFILE=\"$(HISTFILE)\" -DLINENOISE
 
 LOCAL_STATIC_LIBRARIES += linenoise
 
-LOCAL_MODULE := picocom
+LOCAL_MODULE := ppcom
 
 include $(BUILD_EXECUTABLE)

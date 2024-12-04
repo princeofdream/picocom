@@ -26,7 +26,7 @@ driver (see also http://stackoverflow.com/a/21753723/2880699).
 
 Note, that in FreeBSD the RTS handshake line is not been changed upon
 `open()` but staying left in the state whatever it was before. Tested
-with FreeBSD 11, both Ftdi and Prolific adapters, picocom 3.1.
+with FreeBSD 11, both Ftdi and Prolific adapters, ppcom 3.1.
 
 Work-around using the user-space API
 ------------------------------------
@@ -37,11 +37,11 @@ this quite fast, directly after `open()`, the RTS signal will still
 transition to high for a short time. This may reset the
 microcontroller.
 
-Using the picocom `--lower-rts` command line option, I measured about
+Using the ppcom `--lower-rts` command line option, I measured about
 50µs-70µs on my Linux machine and 250µs-450µs on my old Macbook Pro
 running macOS (both tested with an FTDI FT2232H USB-to-Serial adapter).
 But note that there is no hard guarantee for these times; the OS may
-preempt picocom between the `open()` and the "lower-rts" calls.
+preempt ppcom between the `open()` and the "lower-rts" calls.
 
 If the possibility of a microcontroller-reset is not acceptable, you
 could guard against it by adding some hardware between the RTS line
@@ -69,7 +69,7 @@ Analyzed using:
 - Macbook Pro
 - Ft2232H based Usb serial adapter
 - Kubuntu 16.04 64 bit
-- picocom 2.3a, with `--lower-rts` command line option
+- ppcom 2.3a, with `--lower-rts` command line option
 
 CRTSCTS=0x80000000. This bit is set in tty->termios->c_cflag when the
 uart is used with Rts/Cts handshake.
