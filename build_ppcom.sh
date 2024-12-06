@@ -137,17 +137,19 @@ Description:
 OPTIONS:
     -t, --target
         Target [ qnx | linux | windows ]
+    -o, --output
+        Output path, such as /usr/local
 
 Usage:
-    $0
+    $0 [ -o </usr/local> ]
 
 USAGE
 }
 
-long_opts="help,target:,clean"
+long_opts="help,target:,clean,output:"
 long_opts+=""
 
-getopt_cmd=$(getopt -o ht:c --long "$long_opts" \
+getopt_cmd=$(getopt -o ht:co: --long "$long_opts" \
             -n $(basename $0) -- "$@") || \
             { echo -e "\nERROR: Getopt failed. Extra args\n"; usage; exit 1;}
 
@@ -158,6 +160,7 @@ while true; do
         -h|--help) usage; exit 0;;
         -c|--clean) config_clean_build="true";;
         -t|--target) config_platform="$2"; shift;;
+        -o|--output) config_ppcom_output_path="$2"; shift;;
         --) shift; break;;
     esac
     shift
@@ -192,6 +195,7 @@ remove_exist_output ()
 
 install_release ()
 {
+    cp -a ${config_top_path}/output/release/* ${config_ppcom_output_path}/
     return 0
 }	# ----------  end of function install_release  ----------
 
@@ -245,6 +249,15 @@ main_func ()
     fi
 
     build_target
+    if [[ $? -ne 0 ]]; then
+        loge "build target error!"
+        exit 1
+    fi
+    install_release
+    if [[ $? -ne 0 ]]; then
+        loge "install target to <$config_ppcom_output_path> error!"
+        exit 1
+    fi
 
     return 0;
 }	# ----------  end of function main_func  ----------
