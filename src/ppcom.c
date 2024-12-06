@@ -234,7 +234,7 @@ struct {
 #if defined (UUCP_LOCK_DIR) || defined (USE_FLOCK)
     .nolock = 0,
 #endif
-    .escape = CKEY('a'),
+    .escape = CKEY('q'),
     .noescape = 0,
     .send_cmd = "sz -vv",
     .receive_cmd = "rz -vv -E",
