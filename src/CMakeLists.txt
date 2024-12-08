@@ -14,17 +14,17 @@ include_directories(
 )
 
 # aux_source_directory(./src SOURCES)
-set(SOURCES fdio.c)
-list(APPEND SOURCES term.c)
-list(APPEND SOURCES termios2.c)
-list(APPEND SOURCES linenoise.c)
-# list(APPEND SOURCES ctrl_term.c)
-list(APPEND SOURCES split.c)
-list(APPEND SOURCES custbaud.c)
-list(APPEND SOURCES custbaud_bsd.c)
+set(SOURCES fdio.cpp)
+list(APPEND SOURCES term.cpp)
+list(APPEND SOURCES termios2.cpp)
+list(APPEND SOURCES linenoise.cpp)
+# list(APPEND SOURCES ctrl_term.cpp)
+list(APPEND SOURCES split.cpp)
+list(APPEND SOURCES custbaud.cpp)
+list(APPEND SOURCES custbaud_bsd.cpp)
 
-list(APPEND SOURCES_SRV ppcom.c)
-# list(APPEND SOURCES_CLI ppcom_cli.c)
+list(APPEND SOURCES_SRV ppcom.cpp)
+# list(APPEND SOURCES_CLI ppcom_cli.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${SOURCES_SRV})
 

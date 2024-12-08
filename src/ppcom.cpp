@@ -37,6 +37,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <limits.h>
+#include <time.h>
+#include <pthread.h>
 #ifdef USE_FLOCK
 #include <sys/file.h>
 #endif
@@ -45,7 +47,9 @@
 #include <libgen.h>
 #endif
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif /* ifndef _GNU_SOURCE */
 #include <getopt.h>
 
 #include "fdio.h"
@@ -383,19 +387,19 @@ uucp_unlock(void)
 #define HEXBUF_SZ 128
 #define HEXDELIM " \r;:-_.,/"
 
-#define hexisdelim(c) ( strchr(HEXDELIM, (c)) != NULL )
+#define hexisdelim(val_chr) ( strchr(HEXDELIM, (val_chr)) != NULL )
 
 static inline int
-hex2byte (char c)
+hex2byte (char val_chr)
 {
     int r;
 
-    if ( c >= '0' && c <= '9' )
-        r = c - '0';
-    else if ( c >= 'A' && c <= 'F')
-        r = c - 'A' + 10;
-    else if ( c >= 'a' && c <= 'f' )
-        r = c - 'a' + 10;
+    if ( val_chr >= '0' && val_chr <= '9' )
+        r = val_chr - '0';
+    else if ( val_chr >= 'A' && val_chr <= 'F')
+        r = val_chr - 'A' + 10;
+    else if ( val_chr >= 'a' && val_chr <= 'f' )
+        r = val_chr - 'a' + 10;
     else
         r = -1;
 
@@ -405,22 +409,22 @@ hex2byte (char c)
 int
 hex2bin(unsigned char *buf, int sz, const char *str)
 {
-    char c;
+    char val_chr;
     int b0, b1;
     int i;
 
     i = 0;
     while (i < sz) {
         /* delimiter, end of string, or high nibble */
-        c = *str++;
-        if ( c == '\0' ) break;
-        if ( hexisdelim(c) ) continue;
-        b0 = hex2byte(c);
+        val_chr = *str++;
+        if ( val_chr == '\0' ) break;
+        if ( hexisdelim(val_chr) ) continue;
+        b0 = hex2byte(val_chr);
         if ( b0 < 0 ) return -1;
         /* low nibble */
-        c = *str++;
-        if ( c == '\0' ) return -1;
-        b1 = hex2byte(c);
+        val_chr = *str++;
+        if ( val_chr == '\0' ) return -1;
+        b1 = hex2byte(val_chr);
         if ( b1 < 0 ) return -1;
         /* pack byte */
         buf[i++] = (unsigned char)b0 << 4 | (unsigned char)b1;
@@ -549,7 +553,7 @@ init_history (void)
     home_directory = getenv("HOME");
     if (home_directory) {
         home_directory_len = strlen(home_directory);
-        history_file_path = malloc(home_directory_len + 2 + strlen(HISTFILE));
+        history_file_path = (char*)malloc(home_directory_len + 2 + strlen(HISTFILE));
         memcpy(history_file_path, home_directory, home_directory_len + 1);
         if (home_directory[home_directory_len - 1] != '/') {
             strcat(history_file_path, "/");
@@ -746,51 +750,51 @@ map2hex (char *b, char c)
 }
 
 int
-do_map (char *b, int map, char c)
+do_map (char *buf_chr, int map, char val_chr)
 {
     int n = -1;
 
-    switch (c) {
+    switch (val_chr) {
     case '\x7f':
         /* DEL mapings */
         if ( map & M_DELBS ) {
-            b[0] = '\x08'; n = 1;
+            buf_chr[0] = '\x08'; n = 1;
         }
         break;
     case '\x08':
         /* BS mapings */
         if ( map & M_BSDEL ) {
-            b[0] = '\x7f'; n = 1;
+            buf_chr[0] = '\x7f'; n = 1;
         }
         break;
     case '\x0d':
         /* CR mappings */
         if ( map & M_CRLF ) {
-            b[0] = '\x0a'; n = 1;
+            buf_chr[0] = '\x0a'; n = 1;
         } else if ( map & M_CRCRLF ) {
-            b[0] = '\x0d'; b[1] = '\x0a'; n = 2;
+            buf_chr[0] = '\x0d'; buf_chr[1] = '\x0a'; n = 2;
         } else if ( map & M_IGNCR ) {
             n = 0;
         } else if ( map & M_CRHEX ) {
-            n = map2hex(b, c);
+            n = map2hex(buf_chr, val_chr);
         }
         break;
     case '\x0a':
         /* LF mappings */
         if ( map & M_LFCR ) {
-            b[0] = '\x0d'; n = 1;
+            buf_chr[0] = '\x0d'; n = 1;
         } else if ( map & M_LFCRLF ) {
-            b[0] = '\x0d'; b[1] = '\x0a'; n = 2;
+            buf_chr[0] = '\x0d'; buf_chr[1] = '\x0a'; n = 2;
         } else if ( map & M_IGNLF ) {
             n = 0;
         } else if ( map & M_LFHEX ) {
-            n = map2hex(b, c);
+            n = map2hex(buf_chr, val_chr);
         }
         break;
     case '\x09':
         /* TAB mappings */
         if ( map & M_TABHEX ) {
-            n = map2hex(b,c);
+            n = map2hex(buf_chr,val_chr);
         }
         break;
     default:
@@ -798,24 +802,24 @@ do_map (char *b, int map, char c)
     }
 
     if ( n < 0 && map & M_SPCHEX ) {
-        if ( c == '\x7f' || ( (unsigned char)c < 0x20
-                              && c != '\x09' && c != '\x0a'
-                              && c != '\x0d') ) {
-            n = map2hex(b,c);
+        if ( val_chr == '\x7f' || ( (unsigned char)val_chr < 0x20
+                              && val_chr != '\x09' && val_chr != '\x0a'
+                              && val_chr != '\x0d') ) {
+            n = map2hex(buf_chr,val_chr);
         }
     }
     if ( n < 0 && map & M_8BITHEX ) {
-        if ( c & 0x80 ) {
-            n = map2hex(b,c);
+        if ( val_chr & 0x80 ) {
+            n = map2hex(buf_chr,val_chr);
         }
     }
     if ( n < 0 && map & M_NRMHEX ) {
-        if ( (unsigned char)c >= 0x20 && (unsigned char)c < 0x7f ) {
-            n = map2hex(b,c);
+        if ( (unsigned char)val_chr >= 0x20 && (unsigned char)val_chr < 0x7f ) {
+            n = map2hex(buf_chr,val_chr);
         }
     }
     if ( n < 0 ) {
-        b[0] = c; n = 1;
+        buf_chr[0] = val_chr; n = 1;
     }
 
     assert(n > 0 && n <= M_MAXMAP);
@@ -824,12 +828,12 @@ do_map (char *b, int map, char c)
 }
 
 void
-map_and_write (int fd, int map, char c)
+map_and_write (int fd, int map, char val_chr)
 {
     char b[M_MAXMAP];
     int n;
 
-    n = do_map(b, map, c);
+    n = do_map(b, map, val_chr);
     if ( n )
         if ( writen_ni(fd, b, n) < n )
             fatal("write to stdout failed: %s", strerror(errno));
@@ -1183,17 +1187,17 @@ run_cmd(int fd, const char *cmd, const char *args_extra)
 
 int tty_q_push(const char *s, int len) {
     int i, sz, n;
-    unsigned char *b;
+    unsigned char *byte_val;
 
     for (i = 0; i < len; i++) {
         while (tty_q.len + M_MAXMAP > tty_q.sz) {
             sz = tty_q.sz * 2;
             if ( TTY_Q_SZ && sz > TTY_Q_SZ )
                 return i;
-            b = realloc(tty_q.buff, sz);
-            if ( ! b )
+            byte_val = (unsigned char*)realloc(tty_q.buff, sz);
+            if ( ! byte_val )
                 return i;
-            tty_q.buff = b;
+            tty_q.buff = byte_val;
             tty_q.sz = sz;
 #if 0
             fd_printf(STO, "New tty_q size: %d\r\n", sz);
@@ -1948,8 +1952,9 @@ parse_args(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    if ( opts.quiet )
+    if ( opts.quiet ) {
         return;
+	}
 
 #ifndef NO_HELP
     printf("ppcom v%s\n", VERSION_STR);
@@ -2142,7 +2147,7 @@ main (int argc, char *argv[])
 #endif
 
     /* Allocate output buffer with initial size */
-    tty_q.buff = calloc(TTY_Q_SZ_MIN, sizeof(*tty_q.buff));
+    tty_q.buff = (unsigned char*)calloc(TTY_Q_SZ_MIN, sizeof(*tty_q.buff));
     if ( ! tty_q.buff )
         fatal("out of memory");
     tty_q.sz = TTY_Q_SZ_MIN;

@@ -38,7 +38,7 @@ writen_ni(int fd, const void *buff, size_t n)
     ssize_t nw;
     const char *p;
 
-    p = buff;
+    p = (const char *)buff;
     nl = n;
     while (nl > 0) {
         do {
