@@ -1,0 +1,114 @@
+{
+    "common": {
+        "thread_pool_num": 10,
+        "max_data_len": 1045876,
+        "log_level": 2
+    },
+    "services": [
+        {
+            "ServiceInfo": {
+                "service_name": "InterCommunication",
+                "service_id": "0xF001",
+                "instance_id": "0x0001",
+                "major_ver": "1",
+                "ip": "127.0.0.1"
+            },
+            "SdConfig": {
+                "sd_enable": true,
+                "sd_multicast_group": "239.71.0.2",
+                "sd_port": 20490,
+                "initial_delay_min": 10,
+                "initial_delay_max": 100,
+                "repet_base_delay": 100,
+                "repet_max": 3,
+                "ttl": 3,
+                "cyclic_offer_delay": 2000,
+                "req_rsp_delay": 15000,
+                "delay_answer_entry": 60
+            },
+            "ServerCfg": {
+                "udp_ep": true,
+                "reliable": true,
+                "magic_cookies": false,
+                "port": 20510,
+                "events": [
+                    {
+                        "event": "0x9001",
+                        "is_field": true
+                    },
+                    {
+                        "event": "0x9002",
+                        "is_field": true
+                    },
+                    {
+                        "event": "0x8001",
+                        "is_field": false
+                    },
+                    {
+                        "event": "0x8002",
+                        "is_field": false
+                    }
+                ],
+                "eventgroups": [
+                    {
+                        "eventgroup": "0x0001",
+                        "events": [
+                            "0x9001",
+                            "0x9002",
+                            "0x8001",
+                            "0x8002"
+                        ]
+                    }
+                ]
+            },
+            "reliable_eventMethod": [
+                "0x0001"
+            ]
+        },
+        {
+            "ServiceInfo": {
+                "service_name": "PS_ProcessInfo",
+                "service_id": "0xF002",
+                "instance_id": "0x0001",
+                "major_ver": "1",
+                "ip": "127.0.0.1"
+            },
+            "SdConfig": {
+                "sd_enable": true,
+                "sd_multicast_group": "239.71.0.2",
+                "sd_port": 20490,
+                "initial_delay_min": 10,
+                "initial_delay_max": 100,
+                "repet_base_delay": 100,
+                "repet_max": 3,
+                "ttl": 3,
+                "cyclic_offer_delay": 2000,
+                "req_rsp_delay": 15000,
+                "delay_answer_entry": 60
+            },
+            "ClientCfg": {
+                "reliable": true,
+                "port": 20501,
+                "events": [
+                    {
+                        "event": "0x9001",
+                        "is_field": true
+                    },
+                    {
+                        "event": "0x8001",
+                        "is_field": false
+                    }
+                ],
+                "eventgroups": [
+                    {
+                        "eventgroup": "0x0001",
+                        "events": [
+                            "0x9001",
+                            "0x8001"
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

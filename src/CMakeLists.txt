@@ -36,7 +36,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${PPCOM_LIBS} -Wl,-rpath=./)
-add_dependencies(${PROJECT_NAME} procmgr-shared)
+add_dependencies(${PROJECT_NAME} intercomm-shared)
 
 # add_executable(${PROJECT_NAME}-cli ${SOURCES} ${SOURCES_CLI})
 # target_link_libraries(${PROJECT_NAME}-cli ${PPCOM_LIBS} -Wl,-rpath=./)
