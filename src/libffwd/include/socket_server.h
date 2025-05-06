@@ -8,14 +8,19 @@
 
 class SocketServer {
 public:
+    SocketServer();
     SocketServer(int port);
     ~SocketServer();
 
     bool start();
     void stop();
+    void setPort(int port);
     void sendMessage(int clientId, const std::string& message);
     int getSocketServerFD() const {
         return server_fd;
+    }
+    std::vector<int> getSocketClientFD() const {
+        return client_fds;
     }
     int acceptClient();
     void handleClient(int client_fd);

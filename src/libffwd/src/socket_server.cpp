@@ -5,13 +5,20 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+SocketServer::SocketServer() : server_port(-1), server_fd(-1), MaxClients(10)
+{
+}
+
 SocketServer::SocketServer(int port) : server_port(port), server_fd(-1), MaxClients(10)
 {
-    // Constructor implementation
 }
 
 SocketServer::~SocketServer() {
     stop();
+}
+
+void SocketServer::setPort(int port) {
+    server_port = port;
 }
 
 bool SocketServer::start() {

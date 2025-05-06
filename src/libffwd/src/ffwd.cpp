@@ -10,11 +10,63 @@
 #include "msgpak.h"
 #include "dbglog.h"
 
+SocketServer sockServMsg;
+SocketServer sockServCtl;
+
 void print_usage() {
     std::cerr << "Usage: libffwd -t <connection_type> [-p <path>] [-P <port>]\n"
               << "  -t <connection_type>  Type of connection: pipe, fifo, socket\n"
               << "  -f <path>             Path for fifo or pipe (default: /tmp/myfifo)\n"
               << "  -p <port>             Port for socket server (default: 9800)\n";
+}
+
+void callbackMsg (int fd) {
+    char buffer[1024];
+    int loopCnt;
+    int bytes_read = read(fd, buffer, sizeof(buffer));
+    if (bytes_read > 0) {
+        buffer[bytes_read] = '\0';
+        qLogI("Received message: %s", buffer);
+    } else {
+        qLogE("Failed to read message");
+        close(fd);
+    }
+
+    if (sockServCtl.getSocketClientFD().size() > 0) {
+        for (int i = 0; i < sockServCtl.getSocketClientFD().size(); i++) {
+            int client_fd = sockServCtl.getSocketClientFD()[i];
+            if (client_fd != -1) {
+                write(client_fd, buffer, strlen(buffer));
+            }
+        }
+    // } else {
+    //     qLogE("No client connected to control socket");
+    }
+}
+
+void callbackCtl (int fd) {
+    char buffer[1024];
+    int loopCnt;
+    int bytes_read = read(fd, buffer, sizeof(buffer));
+    if (bytes_read > 0) {
+        buffer[bytes_read] = '\0';
+        qLogI("Received message: %s", buffer);
+    } else {
+        qLogE("Failed to read message");
+        close(fd);
+    }
+
+    if (sockServMsg.getSocketClientFD().size() > 0) {
+        for (int i = 0; i < sockServMsg.getSocketClientFD().size(); i++) {
+            int client_fd = sockServMsg.getSocketClientFD()[i];
+            if (client_fd != -1) {
+                write(client_fd, buffer, strlen(buffer));
+            }
+        }
+    // } else {
+    //     qLogE("No client connected to control socket");
+    }
+
 }
 
 int main(int argc, char* argv[]) {
@@ -46,7 +98,8 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize components
-    SocketServer sock_server(port);
+    sockServMsg = SocketServer(port);
+    sockServCtl = SocketServer(port+1);
     SocketClient client;
     Epoll mepoll;
 
@@ -56,39 +109,27 @@ int main(int argc, char* argv[]) {
     Pipe mpipe;
 
     // Start the server
-    sock_server.start();
-
-    std::function<void(int)> callback = [&](int fd) {
-        char buffer[1024];
-        int loopCnt;
-        int bytes_read = read(fd, buffer, sizeof(buffer));
-        if (bytes_read > 0) {
-            buffer[bytes_read] = '\0';
-            qLogI("Received message: %s", buffer);
-        } else {
-            qLogE("Failed to read message");
-            close(fd);
-        }
-
-        loopCnt =  0;
-        while (loopCnt < 10) {
-            memset(buffer, 0x0, sizeof(buffer));
-            sprintf(buffer, "%s-%02d", "Ack", loopCnt);
-            write(fd, buffer, bytes_read);
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            loopCnt++;
-        }
-    };
+    sockServMsg.start();
+    sockServCtl.start();
 
     // Example of adding server socket to epoll
-    mepoll.add(sock_server.getSocketServerFD(), EPOLLIN, [&](int fd)
+    mepoll.add(sockServMsg.getSocketServerFD(), EPOLLIN, [&](int fd)
         {
-            int client_fd = sock_server.acceptClient();
-            if (client_fd != -1) {
-                mepoll.add(client_fd, EPOLLIN, callback);
+            int client_msg_fd = sockServMsg.acceptClient();
+            if (client_msg_fd != -1) {
+                mepoll.add(client_msg_fd, EPOLLIN, callbackMsg);
             }
         }
     );
+    mepoll.add(sockServCtl.getSocketServerFD(), EPOLLIN, [&](int fd)
+        {
+            int client_ctl_fd = sockServCtl.acceptClient();
+            if (client_ctl_fd != -1) {
+                mepoll.add(client_ctl_fd, EPOLLIN, callbackCtl);
+            }
+        }
+    );
+
 
     // Main loop for handling events
     while (true) {
@@ -99,9 +140,10 @@ int main(int argc, char* argv[]) {
             continue;
         }
     }
-    
+
 
     // Cleanup
-    sock_server.stop();
+    sockServMsg.stop();
     return 0;
 }
+
