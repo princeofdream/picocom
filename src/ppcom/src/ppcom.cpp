@@ -52,8 +52,6 @@
 #endif /* ifndef _GNU_SOURCE */
 
 #define CONFIG_ENABLE_MULTI_FD 1
-#define CONFIG_FORCE_INPUT_RN 1
-#define CONFIG_FORCE_OUTPUT_RN 1
 
 #include <getopt.h>
 
@@ -1597,18 +1595,7 @@ loop(void)
                     }
                     else {
                         int tty_ret;
-#if CONFIG_FORCE_INPUT_RN
-                        if (val_chr == '\r') {
-                            tty_ret = tty_q_push((char *)&val_chr, 1);
-                            val_chr = '\n';
-                            tty_ret = tty_q_push((char *)&val_chr, 1);
-                        }
-                        else {
-                            tty_ret = tty_q_push((char *)&val_chr, 1);
-                        }
-#else
                         tty_ret = tty_q_push((char *)&val_chr, 1);
-#endif
                         if (tty_ret != 1)
                             fd_printf(STO, "\x07");
                     }
@@ -1645,12 +1632,6 @@ loop(void)
                 int loop_cnt;
                 char *bmp = &buff_map[0];
 
-                for (loop_cnt = 0; loop_cnt < n; loop_cnt++) {
-                    if (buff_rd[loop_cnt] == '\r') {
-                        buff_rd[loop_cnt] = '\n';
-                    }
-                }
-
                 if ( opts.log_filename ) {
                     if ( writen_ni(log_fd, buff_rd, n) < n ) {
                         fatal("write to logfile failed: %s", strerror(errno));
@@ -1663,24 +1644,9 @@ loop(void)
                     bmp += do_map(bmp, opts.imap, buff_rd[loop_cnt]);
                 }
                 n = bmp - buff_map;
-#if CONFIG_FORCE_INPUT_RN
-                loop_cnt = 0;
-                while (loop_cnt < n) {
-                    if (buff_map[loop_cnt] == '\n') {
-                        buff_map[loop_cnt] = '\r';
-                        writen_ni(STO, buff_map + loop_cnt, 1);
-                        buff_map[loop_cnt] = '\n';
-                    }
-                    if ( writen_ni(STO, buff_map + loop_cnt, 1) < 1 ) {
-                        fatal("write to stdout failed: %s", strerror(errno));
-                    }
-                    loop_cnt++;
-                }
-#else
                 if ( writen_ni(STO, buff_map, n) < n ) {
                     fatal("write to stdout failed: %s", strerror(errno));
                 }
-#endif
             }
         }
 
