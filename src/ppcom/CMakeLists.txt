@@ -3,14 +3,14 @@ project(ppcom)
 
 add_definitions("-std=c++14")
 link_directories(
-    ${CMAKE_BINARY_DIR}/src/libprocmgr
+    ${CMAKE_BINARY_DIR}/src/libffwd
     ./
 )
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/include
-	${CMAKE_CURRENT_SOURCE_DIR}/../libprocmgr/include
+	${CMAKE_CURRENT_SOURCE_DIR}/../libffwd/include
 )
 
 # aux_source_directory(./src SOURCES)
@@ -30,17 +30,17 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${SOURCES_SRV})
 
 
 set(PPCOM_LIBS -pthread)
-list(APPEND PPCOM_LIBS procmgr)
+list(APPEND PPCOM_LIBS ffwd)
 if (${CMAKE_SYSTEM_NAME} MATCHES "QNX")
     list(APPEND PPCOM_LIBS socket)
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${PPCOM_LIBS} -Wl,-rpath=./)
-add_dependencies(${PROJECT_NAME} procmgr-shared)
+add_dependencies(${PROJECT_NAME} ffwd-shared)
 
 add_executable(${PROJECT_NAME}-cli ${SOURCES} ${SOURCES_CLI})
 target_link_libraries(${PROJECT_NAME}-cli ${PPCOM_LIBS} -Wl,-rpath=./)
-add_dependencies(${PROJECT_NAME}-cli procmgr-shared)
+add_dependencies(${PROJECT_NAME}-cli ffwd-shared)
 
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin
