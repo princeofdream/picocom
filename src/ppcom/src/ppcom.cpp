@@ -67,7 +67,6 @@
 #include <config.h>
 
 #include <basic.h>
-#include <ctrl_term.h>
 
 #include "custbaud.h"
 
@@ -1407,58 +1406,6 @@ enum le_reason {
     LE_SIGNAL
 };
 
-
-void *msgs_wr_routine(void *param)
-{
-	struct misc_msg_t *msgs = (struct misc_msg_t*)param;
-	char msgs_buf[1024];
-
-#if 1
-	while (1) {
-		read(msgs->wr_fd[0], msgs_buf, sizeof(msgs_buf));
-		plogi("[ %d ] msg read: %s\n", __LINE__, msgs_buf);
-	}
-#endif
-	return NULL;
-}
-
-// read from terminal and write to file
-void *msgs_rd_routine(void *param)
-{
-	struct misc_msg_t *misc_msg = (struct misc_msg_t*)param;
-	char buf[TTY_RD_SZ+1];
-	char msg_val[4096];
-	char msg_tmp[4096];
-	unsigned long loop_count;
-
-	loop_count=0;
-	memset(msg_val, 0x0, sizeof(msg_val));
-	while (1) {
-		int change_line=0;
-
-		memset(buf, 0x0, sizeof(buf));
-		read(misc_msg->rd_fd[0], buf, sizeof(buf));
-		if (misc_msg->fd > 0) {
-#if 0
-			memset(msg_tmp, 0x0, sizeof(msg_tmp));
-			sprintf(msg_tmp, "%s", buf);
-			write(misc_msg->fd, msg_tmp, strlen(msg_tmp));
-#else
-			write(misc_msg->fd, buf, strlen(buf));
-#endif
-		}
-
-		if (strlen(msg_val) == 0) {
-			sprintf(msg_val, "[loop:%d]", loop_count);
-		} else {
-			sprintf(msg_val, "[loop:<<%d>>]", loop_count);
-		}
-		loop_count++;
-	}
-	return NULL;
-}
-
-
 enum le_reason
 loop(void)
 {
@@ -1485,13 +1432,9 @@ loop(void)
 	misc_msg.index = 1;
 	pipe(misc_msg.wr_fd);
 	pipe(misc_msg.rd_fd);
-    pthread_create(&(misc_msg.wr_pthread_id), NULL,
-            msgs_wr_routine, &misc_msg);
-	// pthread_create(&(misc_msg.rd_pthread_id), NULL,
-	//         msgs_rd_routine, &misc_msg);
+    // pthread_create(&(misc_msg.wr_pthread_id), NULL,
+    //         msgs_wr_routine, &misc_msg);
 #endif
-
-    start_ctrl_term(misc_msg.rd_fd[0], misc_msg.wr_fd[1]);
 
     while ( ! sig_exit ) {
         struct timeval tv, *ptv;
@@ -1675,8 +1618,6 @@ loop(void)
     }
 
 loop_end:
-
-    stop_ctrl_term(NULL);
 
 #if 0
     return LE_SIGNAL;

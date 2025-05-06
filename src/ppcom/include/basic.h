@@ -55,8 +55,6 @@
 #include <sys/ioctl.h>
 #include <sys/syscall.h>
 #include <sys/wait.h>
-#include <procmgr_basic.h>
-#include <misc_utils.h>
 
 
 #include <arpa/inet.h>

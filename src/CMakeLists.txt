@@ -1,5 +1,5 @@
 
-add_subdirectory(libprocmgr)
+add_subdirectory(libffwd)
 add_subdirectory(ppcom)
 
 
