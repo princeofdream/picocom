@@ -67,7 +67,7 @@ std::vector<int> Epoll::wait(int timeout)
             // Call the stored callback
             if (callbacks.find(fd) != callbacks.end())
             {
-                qLogI("EPOLLIN callback fd: %d", fd);
+                // qLogI("EPOLLIN callback fd: %d", fd);
                 callbacks[fd](fd);
             }
         }

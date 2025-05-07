@@ -78,7 +78,8 @@ void receive_messages(int sockfd) {
             qLogI("Server closed the connection");
             break;
         }
-        qLogI("Message received from server: %s", buffer);
+        // qLogI("Message received from server: %s", buffer);
+        printf("%s", buffer);
     }
     running = false; // 如果接收线程退出，设置运行状态为 false
 }
@@ -132,10 +133,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (message.empty()) {
-        print_usage();
-        return 1;
-    }
+    // if (message.empty()) {
+    //     print_usage();
+    //     return 1;
+    // }
 
     if (comm_type != "sock" && comm_type != "pipe" && comm_type != "fifo") {
         print_usage();
@@ -159,12 +160,16 @@ int main(int argc, char* argv[]) {
      // 启动接收线程
     std::thread receiver_thread(receive_messages, msgfd);
 
-
     while (true) {
         if (!running) {
             break;
         }
-        qLogI("Sending message: %s", message.c_str());
+        std::cin >> message;
+        if (message == "exit") {
+            break;
+        }
+        // qLogI("Sending message: %s", message.c_str());
+        printf("%s", message.c_str());
         send_message(msgfd, message);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }

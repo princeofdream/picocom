@@ -23,6 +23,8 @@ list(APPEND SOURCES src/custbaud.cpp)
 # list(APPEND SOURCES src/linenoise-1.0/example.c)
 list(APPEND SOURCES src/custbaud_bsd.cpp)
 
+list(APPEND SOURCES src/ffwd.cpp)
+
 list(APPEND SOURCES_SRV src/ppcom.cpp)
 list(APPEND SOURCES_CLI src/ppcom_cli.cpp)
 

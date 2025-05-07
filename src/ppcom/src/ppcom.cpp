@@ -46,6 +46,7 @@
 #include <dirent.h>
 #include <libgen.h>
 #endif
+#include "ffwd.h"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -1416,6 +1417,7 @@ loop(void)
 	enum le_reason le_ret = LE_SIGNAL;
 #if CONFIG_ENABLE_MULTI_FD
 	struct misc_msg_t misc_msg;
+    ffwd mffwd;
 #else
     fd_set rdset, wrset;
 #endif
@@ -1434,6 +1436,7 @@ loop(void)
 	pipe(misc_msg.rd_fd);
     // pthread_create(&(misc_msg.wr_pthread_id), NULL,
     //         msgs_wr_routine, &misc_msg);
+    mffwd.init();
 #endif
 
     while ( ! sig_exit ) {
@@ -1575,6 +1578,10 @@ loop(void)
                 int loop_cnt;
                 char *bmp = &buff_map[0];
 
+                // serial output
+                if (mffwd.getMsgFD() > 0) {
+                    writen_ni(mffwd.getMsgFD(), buff_rd, n);
+                }
                 if ( opts.log_filename ) {
                     if ( writen_ni(log_fd, buff_rd, n) < n ) {
                         fatal("write to logfile failed: %s", strerror(errno));
@@ -1605,8 +1612,14 @@ loop(void)
             do {
                 n = write(tty_fd, tty_q.buff, sz);
             } while ( n < 0 && errno == EINTR );
-            if ( n <= 0 )
+            if ( n <= 0 ) {
                 fatal("write to port failed: %s", strerror(errno));
+            }
+
+            // input to serial
+            if (opts.lecho && mffwd.getMsgFD() > 0) {
+                writen_ni(mffwd.getMsgFD(), tty_q.buff, n);
+            }
             if ( opts.lecho && opts.log_filename ) {
                 if ( writen_ni(log_fd, tty_q.buff, n) < n ) {
                     fatal("write to logfile failed: %s", strerror(errno));
@@ -1619,6 +1632,7 @@ loop(void)
 
 loop_end:
 
+    mffwd.exit();
 #if 0
     return LE_SIGNAL;
 #else
