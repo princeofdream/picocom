@@ -88,3 +88,15 @@ void SocketServer::handleClient(int client_fd) {
     }
     close(client_fd);
 }
+
+int SocketServer::removeClient(int client_fd)
+{
+    for (auto it = client_fds.begin(); it != client_fds.end(); ++it) {
+        if (*it == client_fd) {
+            close(client_fd);
+            client_fds.erase(it);
+            qLogI("Removed client with fd %d", client_fd);
+            return 0;
+        }
+    }
+}

@@ -22,6 +22,7 @@ public:
     std::vector<int> getSocketClientFD() const {
         return client_fds;
     }
+    int removeClient(int client_fd);
     int acceptClient();
     void handleClient(int client_fd);
     using MessageCallback = std::function<void(int clientId, const std::string &message)>;

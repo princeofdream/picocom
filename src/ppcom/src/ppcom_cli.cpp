@@ -78,8 +78,10 @@ void receive_messages(int sockfd) {
             qLogI("Server closed the connection");
             break;
         }
+        buffer[bytes_received] = '\0'; // 确保字符串以 null 结尾
         // qLogI("Message received from server: %s", buffer);
         printf("%s", buffer);
+        fflush(stdout);
     }
     running = false; // 如果接收线程退出，设置运行状态为 false
 }
@@ -103,7 +105,7 @@ int send_message(int sockfd, const std::string& message) {
 
 int main(int argc, char* argv[]) {
     std::string host = "127.0.0.1";
-    int port = 9800;
+    int port = 9801;
     std::string message;
     std::string fifo_path = "/tmp/ffwd_fifo";
     std::string comm_type = "sock";

@@ -20,7 +20,8 @@ void ffwd::ppcom_callbackMsg (int fd) {
         buffer[bytes_read] = '\0';
         // qLogI("Received message(%d): %s", bytes_read, buffer);
     } else {
-        qLogE("Failed to read message");
+        qLogE("Failed to read fd[%d] message", fd);
+        sockServCtl.removeClient(fd);
         close(fd);
     }
 
@@ -29,6 +30,7 @@ void ffwd::ppcom_callbackMsg (int fd) {
             int client_fd = sockServCtl.getSocketClientFD()[i];
             if (client_fd != -1) {
                 write(client_fd, buffer, strlen(buffer));
+                // printf("\r\nSent message to client %d: %s\r\n", client_fd, buffer);
             }
         }
     // } else {
@@ -44,7 +46,8 @@ void ffwd::ppcom_callbackCtl (int fd) {
         buffer[bytes_read] = '\0';
         qLogI("Received message(%d): %s", bytes_read, buffer);
     } else {
-        qLogE("Failed to read message");
+        qLogE("Failed to read fd[%d] message", fd);
+        sockServCtl.removeClient(fd);
         close(fd);
     }
 

@@ -151,17 +151,17 @@ enum LogLevel {
         #define pLogE(frm, args...) {syslog(LOG_USER|LOG_ERR,     "E " frm " \n" , ##args);}
         #define pLogC(frm, args...) {syslog(LOG_USER|LOG_CRIT,    "E " frm " \n" , ##args);}
     #else
-        #define qLogD(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_DEBUG)) {printf("D [%s:%d] " frm " \n" , __FUNCTION__,__LINE__,##args);}}
-        #define qLogI(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_INFO)) {printf("I [%s:%d] " frm " \n" , __FUNCTION__,__LINE__,##args);}}
-        #define qLogW(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_WARNING)) {printf("W [%s:%d] " frm " \n" , __FUNCTION__,__LINE__,##args);}}
-        #define qLogE(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_ERROR)) {printf("E [%s:%d] " frm " \n" , __FUNCTION__,__LINE__,##args);}}
-        #define qLogC(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_FAT)) {printf("C [%s:%d] " frm " \n" , __FUNCTION__,__LINE__,##args);}}
+        #define qLogD(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_DEBUG)) {printf("D [%s:%d] " frm " \r\n" , __FUNCTION__,__LINE__,##args);}}
+        #define qLogI(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_INFO)) {printf("I [%s:%d] " frm " \r\n" , __FUNCTION__,__LINE__,##args);}}
+        #define qLogW(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_WARNING)) {printf("W [%s:%d] " frm " \r\n" , __FUNCTION__,__LINE__,##args);}}
+        #define qLogE(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_ERROR)) {printf("E [%s:%d] " frm " \r\n" , __FUNCTION__,__LINE__,##args);}}
+        #define qLogC(frm, args...) {if(dbglog::LogOutput(LOGLEVEL_L_FAT)) {printf("C [%s:%d] " frm " \r\n" , __FUNCTION__,__LINE__,##args);}}
 
-        #define pLogD(frm, args...) {printf("D " frm " \n" , ##args);}
-        #define pLogI(frm, args...) {printf("I " frm " \n" , ##args);}
-        #define pLogW(frm, args...) {printf("W " frm " \n" , ##args);}
-        #define pLogE(frm, args...) {printf("E " frm " \n" , ##args);}
-        #define pLogC(frm, args...) {printf("C " frm " \n" , ##args);}
+        #define pLogD(frm, args...) {printf("D " frm " \r\n" , ##args);}
+        #define pLogI(frm, args...) {printf("I " frm " \r\n" , ##args);}
+        #define pLogW(frm, args...) {printf("W " frm " \r\n" , ##args);}
+        #define pLogE(frm, args...) {printf("E " frm " \r\n" , ##args);}
+        #define pLogC(frm, args...) {printf("C " frm " \r\n" , ##args);}
     #endif
 #endif
 
