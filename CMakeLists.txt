@@ -5,6 +5,10 @@ project(ppcom_main)
 set(CMAKE_CXX_STANDARD 14)
 set(VERSION 1.0.0)
 
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib;$ORIGIN/../soa_lib")
+set(CMAKE_BUILD_RPATH "$ORIGIN/../lib;$ORIGIN/../soa_lib")
+
 add_subdirectory(src)
 
 # install(TARGETS ${PROJECT_NAME}
