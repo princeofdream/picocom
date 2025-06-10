@@ -35,7 +35,7 @@ void Epoll::add(int fd, uint32_t events, std::function<void(int)> callback)
     qLogD("Added callback for file descriptor %d", fd);
 }
 
-void Epoll::addSt(int fd, uint32_t events, std::function<void(epoll_st_t *)> cb)
+void Epoll::addSt(int fd, uint32_t events, std::function<void(int, epoll_st_t&)> callback)
 {
     struct epoll_event event;
     event.events = events;
@@ -49,20 +49,29 @@ void Epoll::addSt(int fd, uint32_t events, std::function<void(epoll_st_t *)> cb)
 
     qLogD("Adding callback for file descriptor %d", fd);
     // Store the callback for later use
-    vec_epoll_st.push_back({fd, events, fd, -1, nullptr}); // Initialize epoll_st_t
-    cbs[fd] = cb; 
+    vec_epoll_st.push_back({fd, events, fd, -1, nullptr}); // Initialize epoll_st_
+    cbs[fd] = callback;
     qLogD("Added callback for file descriptor %d", fd);
 }
 
 void Epoll::remove(int fd)
 {
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, nullptr) == -1)
-    {
-        throw std::runtime_error("Failed to remove file descriptor from epoll");
+    try {
+        qLogD("Removing file descriptor %d from epoll", fd);
+        // Check if the file descriptor exists in the callbacks map
+        if(epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, nullptr) < 0) {
+            qLogE("Failed to remove file descriptor %d from epoll", fd);
+            // throw std::runtime_error("Failed to remove file descriptor from epoll");
+        }
+    } catch (const std::exception& e) {
+        qLogE("Exception while checking file descriptor %d: %s", fd, e.what());
     }
     // Remove the callback
-    callbacks.erase(fd);
-    cbs.erase(fd);
+    try {
+        qLogD("Removing file descriptor %d from epoll", fd);
+    } catch (const std::out_of_range& e) {
+        qLogE("Callback for file descriptor %d not found: %s", fd, e.what());
+    }
     qLogD("Removed file descriptor %d from epoll and erased callbacks", fd);
 }
 
@@ -94,13 +103,14 @@ std::vector<int> Epoll::wait(int timeout)
             if (cbs.find(fd) != cbs.end())
             {
                 int ret;
-
+                // qLogI("EPOLLIN callback fd: %d", fd);
                 epoll_st_t epollSt;
                 ret = getEpollStByFd(vec_epoll_st, epollSt, fd);
-                // qLogI("EPOLLIN callback fd: %d, ret: %d", fd, ret);
-                if (ret >= 0) {
-                    cbs[fd](&epollSt);
+                if (ret < 0) {
+                    qLogE("Failed to find epoll_st for fd: %d", fd);
+                    continue; // Skip if not found
                 }
+                cbs[fd](fd, epollSt);
             }
         }
         if (events[i].events & EPOLLOUT) {

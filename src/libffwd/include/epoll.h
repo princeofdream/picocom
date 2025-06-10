@@ -21,13 +21,13 @@ public:
     virtual ~Epoll();
 
     void add(int fd, uint32_t events, std::function<void(int)> callback);
-    void addSt(int fd, uint32_t events, std::function<void(epoll_st_t *)> callback);
+    void addSt(int fd, uint32_t events, std::function<void(int, epoll_st_t&)> callback);
     void remove(int fd);
     std::vector<int> wait(int timeout);
     std::unordered_map<int, std::function<void(int)>> getCallbacks() const {
         return callbacks;
     }
-    std::unordered_map<int, std::function<void(epoll_st_t *)>> getCbs() const {
+    std::unordered_map<int, std::function<void(int, epoll_st_t&)>> getCbs() const {
         return cbs;
     }
     int getEpollStVecSize() const {
@@ -43,7 +43,7 @@ private :
     int epoll_fd;
     struct epoll_event event;
     std::unordered_map<int, std::function<void(int)>> callbacks;
-    std::unordered_map<int, std::function<void(epoll_st_t *)>> cbs;
+    std::unordered_map<int, std::function<void(int, epoll_st_t&)>> cbs;
     std::vector<epoll_st_t> vec_epoll_st;
 };
 

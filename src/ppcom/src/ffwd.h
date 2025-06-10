@@ -35,8 +35,8 @@ public:
     virtual ~ffwd ();
     void ppcom_callbackMsg (int fd);
     void ppcom_callbackCtl (int fd);
-    void ppcom_EpollCallbackMsg (epoll_st_t epollSt);
-    void ppcom_EpollCallbackCtl (epoll_st_t epollSt);
+    void ppcom_EpollCallbackMsg (int fd, epoll_st_t &epollSt);
+    void ppcom_EpollCallbackCtl (int fd, epoll_st_t &epollSt);
 
     int init();
     int exit();
@@ -49,6 +49,9 @@ public:
     int send_message(int sockfd, const std::string& message);
 
     int getMsgFD();
+    Epoll& getEpoll() {
+        return mepoll;
+    }
 private:
     SocketServer sockServMsg;
     SocketServer sockServCtl;
