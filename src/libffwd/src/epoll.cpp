@@ -69,6 +69,8 @@ void Epoll::remove(int fd)
     // Remove the callback
     try {
         qLogD("Removing file descriptor %d from epoll", fd);
+        callbacks.erase(fd);
+        cbs.erase(fd);
     } catch (const std::out_of_range& e) {
         qLogE("Callback for file descriptor %d not found: %s", fd, e.what());
     }
