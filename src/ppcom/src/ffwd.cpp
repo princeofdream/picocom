@@ -49,8 +49,8 @@ void ffwd::ppcom_EpollCallbackMsg (int fd, epoll_st_t &epollSt) {
     } else {
         qLogE("Failed to read fd[%d] message", fd);
         sockServCtl.removeClient(fd);
-        static_cast<ffwd*>(epollSt.data)->getEpoll().remove(fd);
         close(fd);
+        static_cast<ffwd*>(epollSt.data)->getEpoll().remove(fd);
     }
 
     // Send the message to all connected clients
@@ -78,8 +78,8 @@ void ffwd::ppcom_EpollCallbackCtl (int fd, epoll_st_t &epollSt)
     } else {
         qLogE("Failed to read fd[%d] message", fd);
         sockServCtl.removeClient(fd);
-        static_cast<ffwd*>(epollSt.data)->getEpoll().remove(fd);
         close(fd);
+        static_cast<ffwd*>(epollSt.data)->getEpoll().remove(fd);
     }
 
 #if 0

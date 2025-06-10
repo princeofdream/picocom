@@ -61,7 +61,7 @@ void Epoll::remove(int fd)
         // Check if the file descriptor exists in the callbacks map
         if(epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, nullptr) < 0) {
             qLogE("Failed to remove file descriptor %d from epoll", fd);
-            // throw std::runtime_error("Failed to remove file descriptor from epoll");
+            throw std::runtime_error("Failed to remove file descriptor from epoll");
         }
     } catch (const std::exception& e) {
         qLogE("Exception while checking file descriptor %d: %s", fd, e.what());
