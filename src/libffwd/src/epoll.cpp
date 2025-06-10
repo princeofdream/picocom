@@ -35,6 +35,25 @@ void Epoll::add(int fd, uint32_t events, std::function<void(int)> callback)
     qLogD("Added callback for file descriptor %d", fd);
 }
 
+void Epoll::addSt(int fd, uint32_t events, std::function<void(epoll_st_t *)> cb)
+{
+    struct epoll_event event;
+    event.events = events;
+    event.data.fd = fd;
+
+    qLogD("Adding file descriptor %d to epoll", fd);
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1)
+    {
+        throw std::runtime_error("Failed to add file descriptor to epoll");
+    }
+
+    qLogD("Adding callback for file descriptor %d", fd);
+    // Store the callback for later use
+    vec_epoll_st.push_back({fd, events, fd, -1, nullptr}); // Initialize epoll_st_t
+    cbs[fd] = cb; 
+    qLogD("Added callback for file descriptor %d", fd);
+}
+
 void Epoll::remove(int fd)
 {
     if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, nullptr) == -1)
@@ -43,6 +62,8 @@ void Epoll::remove(int fd)
     }
     // Remove the callback
     callbacks.erase(fd);
+    cbs.erase(fd);
+    qLogD("Removed file descriptor %d from epoll and erased callbacks", fd);
 }
 
 std::vector<int> Epoll::wait(int timeout)
@@ -70,6 +91,17 @@ std::vector<int> Epoll::wait(int timeout)
                 // qLogI("EPOLLIN callback fd: %d", fd);
                 callbacks[fd](fd);
             }
+            if (cbs.find(fd) != cbs.end())
+            {
+                int ret;
+
+                epoll_st_t epollSt;
+                ret = getEpollStByFd(vec_epoll_st, epollSt, fd);
+                // qLogI("EPOLLIN callback fd: %d, ret: %d", fd, ret);
+                if (ret >= 0) {
+                    cbs[fd](&epollSt);
+                }
+            }
         }
         if (events[i].events & EPOLLOUT) {
             qLogI("EPOLLOUT");
@@ -77,4 +109,31 @@ std::vector<int> Epoll::wait(int timeout)
     }
 
     return active_fds;
+}
+
+int Epoll::getEpollStByFd(std::vector<epoll_st_t> vec_epollSt, epoll_st_t& epollSt, int fd)
+{
+    epollSt = { -1, 0, -1, -1, nullptr }; // Initialize epollSt
+    for (size_t i = 0; i < vec_epollSt.size(); ++i) {
+        if (vec_epollSt[i].infd == fd) {
+            epollSt = vec_epollSt[i];
+            return i; // Return the index of the found event
+        }
+    }
+
+    return -1; // Event not found
+}
+
+int Epoll::getEpollStByIndex(std::vector<epoll_st_t> vec_epollSt, epoll_st_t& epollSt, int index)
+{
+    epollSt = { -1, 0, -1, -1, nullptr }; // Initialize epollSt
+
+    for (size_t i = 0; i < vec_epollSt.size(); ++i) {
+        if (vec_epollSt[i].index == index) {
+            epollSt = vec_epollSt[i];
+            return i; // Return the index of the found event
+        }
+    }
+
+    return -1; // Event not found
 }

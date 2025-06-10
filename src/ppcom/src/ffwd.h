@@ -35,6 +35,8 @@ public:
     virtual ~ffwd ();
     void ppcom_callbackMsg (int fd);
     void ppcom_callbackCtl (int fd);
+    void ppcom_EpollCallbackMsg (epoll_st_t epollSt);
+    void ppcom_EpollCallbackCtl (epoll_st_t epollSt);
 
     int init();
     int exit();
