@@ -13,57 +13,35 @@ ffwd::ffwd(): srvPort(9800), msgfd(-1), cliRunning(false)
 ffwd::~ffwd()
 {}
 
-void ffwd::ppcom_callbackMsg (int fd) {
-    char buffer[1024];
-    int loopCnt;
-    int bytes_read = read(fd, buffer, sizeof(buffer));
-    if (bytes_read > 0) {
-        buffer[bytes_read] = '\0';
-        // qLogI("Received message(%d): %s", bytes_read, buffer);
-    } else {
-        qLogE("Failed to read fd[%d] message", fd);
-        sockServCtl.removeClient(fd);
-        close(fd);
-    }
-
-    if (sockServCtl.getSocketClientFD().size() > 0) {
-        for (int i = 0; i < sockServCtl.getSocketClientFD().size(); i++) {
-            int client_fd = sockServCtl.getSocketClientFD()[i];
-            if (client_fd != -1) {
-                write(client_fd, buffer, strlen(buffer));
-                // qLogI("Sent message to client %d: %s", client_fd, buffer);
-            }
-        }
-    // } else {
-    //     qLogE("No client connected to control socket");
-    }
-}
-
 void ffwd::ppcom_EpollCallbackMsg (int fd, epoll_st_t &epollSt) {
     char buffer[1024];
     int loopCnt;
     int bytes_read = read(fd, buffer, sizeof(buffer));
+
     if (bytes_read > 0) {
         buffer[bytes_read] = '\0';
         // qLogI("Received message(%d): %s", bytes_read, buffer);
     } else {
         qLogE("Failed to read fd[%d] message", fd);
-        sockServCtl.removeClient(fd);
+        sockServMsg.removeClient(fd);
         close(fd);
         static_cast<ffwd*>(epollSt.data)->getEpoll().remove(fd);
     }
 
     // Send the message to all connected clients
-    if (sockServCtl.getSocketClientFD().size() > 0) {
-        for (int i = 0; i < sockServCtl.getSocketClientFD().size(); i++) {
-            int client_fd = sockServCtl.getSocketClientFD()[i];
-            if (client_fd != -1) {
+    if (sockServMsg.getSocketClientFD().size() > 0) {
+        for (int i = 0; i < sockServMsg.getSocketClientFD().size(); i++) {
+            int client_fd = sockServMsg.getSocketClientFD()[i];
+            // qLogI("[%d] Current fd [%d], Skipping message fd [%d, %d]", fd, client_fd, msgfd, ctlfd);
+            if (client_fd == msgfd || client_fd == fd) {
+                // qLogI("Current fd [%d], Skipping message fd [%d, %d]", client_fd, msgfd, ctlfd);
+                continue; // Skip invalid client file descriptors
+            }
+            if (client_fd > 0) {
                 write(client_fd, buffer, strlen(buffer));
-                // printf("\r\nSent message to client %d: %s\r\n", client_fd, buffer);
+                qLogI("[%d] Sent message to client fd %d: %s", fd, client_fd, buffer);
             }
         }
-    // } else {
-    //     qLogE("No client connected to control socket");
     }
 }
 
@@ -74,7 +52,7 @@ void ffwd::ppcom_EpollCallbackCtl (int fd, epoll_st_t &epollSt)
     int bytes_read = read(fd, buffer, sizeof(buffer));
     if (bytes_read > 0) {
         buffer[bytes_read] = '\0';
-        qLogI("Received message(%d): %s", bytes_read, buffer);
+        qLogI("[%d] Received message(%d): %s", fd, bytes_read, buffer);
     } else {
         qLogE("Failed to read fd[%d] message", fd);
         sockServCtl.removeClient(fd);
@@ -82,52 +60,19 @@ void ffwd::ppcom_EpollCallbackCtl (int fd, epoll_st_t &epollSt)
         static_cast<ffwd*>(epollSt.data)->getEpoll().remove(fd);
     }
 
-#if 0
-    // Send the message to all connected clients
-    if (sockServMsg.getSocketClientFD().size() > 0) {
-        for (int i = 0; i < sockServMsg.getSocketClientFD().size(); i++) {
-            int client_fd = sockServMsg.getSocketClientFD()[i];
-            if (client_fd != -1) {
-                write(client_fd, buffer, strlen(buffer));
-            }
-        }
-    // } else {
-    //     qLogE("No client connected to control socket");
-    }
-#endif
     // Send the message to all server
-    if (epollSt.outfd != -1) {
-        write(epollSt.outfd, buffer, strlen(buffer));
-        qLogI("Sent message to server fd %d: %s", epollSt.outfd, buffer);
-    } else {
-        qLogE("No server connected to control socket");
-    }
-
-    return;
-}
-
-void ffwd::ppcom_callbackCtl (int fd) {
-    char buffer[1024];
-    int loopCnt;
-    int bytes_read = read(fd, buffer, sizeof(buffer));
-    if (bytes_read > 0) {
-        buffer[bytes_read] = '\0';
-        qLogI("Received message(%d): %s", bytes_read, buffer);
-    } else {
-        qLogE("Failed to read fd[%d] message", fd);
-        sockServCtl.removeClient(fd);
-        close(fd);
-    }
-
-    if (sockServMsg.getSocketClientFD().size() > 0) {
-        for (int i = 0; i < sockServMsg.getSocketClientFD().size(); i++) {
-            int client_fd = sockServMsg.getSocketClientFD()[i];
-            if (client_fd != -1) {
+    if (sockServCtl.getSocketClientFD().size() > 0) {
+        for (int i = 0; i < sockServCtl.getSocketClientFD().size(); i++) {
+            int client_fd = sockServCtl.getSocketClientFD()[i];
+            if (client_fd == ctlfd || client_fd == fd) {
+                // qLogI("[%d] Current fd [%d], Skipping message fd [%d, %d]", fd, client_fd, msgfd, ctlfd);
+                continue; // Skip invalid client file descriptors
+            }
+            if (client_fd > 0) {
                 write(client_fd, buffer, strlen(buffer));
+                qLogI("[%d] Sent message to client fd %d: %s", fd, client_fd, buffer);
             }
         }
-    // } else {
-    //     qLogE("No client connected to control socket");
     }
 
     return;
@@ -140,30 +85,11 @@ int ffwd::startSrv() {
     sockServMsg.start();
     sockServCtl.start();
 
-#if 0
-    mepoll.add(sockServMsg.getSocketServerFD(), EPOLLIN, [&](int fd)
-        {
-            int client_msg_fd = sockServMsg.acceptClient();
-            if (client_msg_fd != -1) {
-                mepoll.add(client_msg_fd, EPOLLIN, std::bind(&ffwd::ppcom_callbackMsg, this, client_msg_fd));
-            }
-        }
-    );
-    mepoll.add(sockServCtl.getSocketServerFD(), EPOLLIN, [&](int fd)
-        {
-            int client_ctl_fd = sockServCtl.acceptClient();
-            if (client_ctl_fd != -1) {
-                mepoll.add(client_ctl_fd, EPOLLIN, std::bind(&ffwd::ppcom_callbackCtl, this, client_ctl_fd));
-            }
-        }
-    );
-#else
     mepoll.addSt(sockServMsg.getSocketServerFD(), EPOLLIN, [&](int fd, epoll_st_t &epollSt)
         {
             int client_msg_fd = sockServMsg.acceptClient();
-            epollSt.outfd = client_msg_fd;
             epollSt.data = this; // Store 'this' pointer for callback
-            qLogI("Accepted client connection on fd: %d", client_msg_fd);
+            qLogI("[%d] Accepted client connection on fd: %d", fd, client_msg_fd);
             if (client_msg_fd != -1) {
                 // qLogI("Adding callback for client_msg_fd: %d", client_msg_fd);
                 mepoll.addSt(client_msg_fd, EPOLLIN, std::bind(&ffwd::ppcom_EpollCallbackMsg, this, client_msg_fd, epollSt));
@@ -173,17 +99,15 @@ int ffwd::startSrv() {
     mepoll.addSt(sockServCtl.getSocketServerFD(), EPOLLIN, [&](int fd, epoll_st_t &epollSt)
         {
             int client_ctl_fd = sockServCtl.acceptClient();
-            epollSt.outfd = client_ctl_fd;
+            epollSt.outfd = fd;
             epollSt.data = this; // Store 'this' pointer for callback
-            // qLogI("Accepted control connection on fd: %d", client_ctl_fd);
+            qLogI("[%d] Accepted control connection on fd: %d", fd, client_ctl_fd);
             if (client_ctl_fd != -1) {
                 // qLogI("Adding callback for client_ctl_fd: %d", client_ctl_fd);
                 mepoll.addSt(client_ctl_fd, EPOLLIN, std::bind(&ffwd::ppcom_EpollCallbackCtl, this, client_ctl_fd, epollSt));
             }
         }
     );
-#endif
-
     srvThrd = std::thread([&]() {
         // Main loop for handling events
         while (true) {
@@ -214,9 +138,16 @@ int ffwd::init() {
 
     // for cli
     msgfd = setup_socket("127.0.0.1", srvPort);
+    qLogI("get message from tty msgfd: %d", msgfd);
     if (msgfd < 0) {
         return msgfd;
     }
+    ctlfd = setup_socket("127.0.0.1", srvPort+1);
+    qLogI("set control to tty with ctlfd: %d", ctlfd);
+    if (ctlfd < 0) {
+        return ctlfd;
+    }
+    // std::thread receiver_thread(std::bind(&ffwd::receive_messages, this, msgfd),msgfd);
     // std::thread receiver_thread(std::bind(&ffwd::receive_messages, this, msgfd),msgfd);
     return 0;
 }
@@ -232,6 +163,7 @@ int ffwd::exit() {
     // }
 
     close(msgfd);
+    close(ctlfd);
     return 0;
 }
 
@@ -293,8 +225,5 @@ int ffwd::send_message(int sockfd, const std::string& message) {
     // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
-int ffwd::getMsgFD() {
-    return msgfd;
-}
 
 

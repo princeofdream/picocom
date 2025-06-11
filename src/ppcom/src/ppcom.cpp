@@ -1418,8 +1418,6 @@ loop(void)
 #if CONFIG_ENABLE_MULTI_FD
 	struct misc_msg_t misc_msg;
     ffwd mffwd;
-#else
-    fd_set rdset, wrset;
 #endif
     int r, n;
     int stdin_closed;
@@ -1448,17 +1446,11 @@ loop(void)
         FD_ZERO(&misc_msg.wr_set);
         if ( ! stdin_closed ) FD_SET(STI, &misc_msg.rd_set);
         if ( ! opts.exit ) FD_SET(tty_fd, &misc_msg.rd_set);
-#else
-        FD_ZERO(&rdset);
-        FD_ZERO(&wrset);
-        if ( ! stdin_closed ) FD_SET(STI, &rdset);
-        if ( ! opts.exit ) FD_SET(tty_fd, &rdset);
+        if ( mffwd.getCtlFD() > 0 ) FD_SET(mffwd.getCtlFD(), &misc_msg.rd_set);
 #endif
         if ( tty_q.len ) {
 #if CONFIG_ENABLE_MULTI_FD	// by jamesl optimize rd/wr fd set
             FD_SET(tty_fd, &misc_msg.wr_set);
-#else
-            FD_SET(tty_fd, &wrset);
 #endif
         } else {
             if ( opts.exit_after >= 0 ) {
@@ -1473,9 +1465,8 @@ loop(void)
         }
 
 #if CONFIG_ENABLE_MULTI_FD	// by jamesl optimize rd/wr fd set
-        r = select(tty_fd + 1, &misc_msg.rd_set, &misc_msg.wr_set, NULL, ptv);
-#else
-        r = select(tty_fd + 1, &rdset, &wrset, NULL, ptv);
+        r = select(tty_fd > mffwd.getCtlFD()? tty_fd + 1: mffwd.getCtlFD()+1,
+                   &misc_msg.rd_set, &misc_msg.wr_set, NULL, ptv);
 #endif
         if ( r < 0 )  {
             if ( errno == EINTR )
@@ -1492,8 +1483,6 @@ loop(void)
         // input: read from stdin
 #if CONFIG_ENABLE_MULTI_FD
         if ( FD_ISSET(STI, &misc_msg.rd_set) )
-#else
-        if ( FD_ISSET(STI, &rdset) )
 #endif
 		{
             /* read from terminal */
@@ -1558,8 +1547,6 @@ loop(void)
         // input: read from tty port
 #if CONFIG_ENABLE_MULTI_FD
         if ( FD_ISSET(tty_fd, &misc_msg.rd_set) )
-#else
-        if ( FD_ISSET(tty_fd, &rdset) )
 #endif
 		{
             char buff_rd[TTY_RD_SZ];
@@ -1603,8 +1590,6 @@ loop(void)
         // output: Write to terminal port
 #if CONFIG_ENABLE_MULTI_FD
         if ( FD_ISSET(tty_fd, &misc_msg.wr_set) )
-#else
-        if ( FD_ISSET(tty_fd, &wrset) )
 #endif
 		{
             int sz;
@@ -1628,6 +1613,27 @@ loop(void)
             memmove(tty_q.buff, tty_q.buff + n, tty_q.len - n);
             tty_q.len -= n;
         }
+
+#if 1
+        if (FD_ISSET(mffwd.getCtlFD(), &misc_msg.rd_set)) {
+            int ret;
+            uint8_t val_chr;
+            char buf_str[1024];
+
+            memset(buf_str, 0x0, sizeof(buf_str));
+            ret = read(mffwd.getCtlFD(), &buf_str, sizeof(buf_str) - 1);
+            for (int i = 0; i < strlen(buf_str); i++) {
+                val_chr = buf_str[i];
+                if (val_chr == '\n' || val_chr == '\r') {
+                    buf_str[i] = 0;
+                }
+                ret = tty_q_push((char *)&val_chr, 1);
+                // printf("send: [%c]\n", val_chr);
+                if (ret != 1)
+                    fd_printf(STO, "\x07");
+            }
+        }
+#endif
     }
 
 loop_end:

@@ -47,7 +47,7 @@ bool SocketServer::start() {
         return false;
     }
 
-    qLogI("Server started on port: %d", server_port);
+    qLogI("Server started on port: %d, fd: %d", server_port, server_fd);
     return true;
 }
 

@@ -33,8 +33,6 @@ class ffwd
 public:
     ffwd ();
     virtual ~ffwd ();
-    void ppcom_callbackMsg (int fd);
-    void ppcom_callbackCtl (int fd);
     void ppcom_EpollCallbackMsg (int fd, epoll_st_t &epollSt);
     void ppcom_EpollCallbackCtl (int fd, epoll_st_t &epollSt);
 
@@ -48,7 +46,15 @@ public:
     void receive_messages(int sockfd);
     int send_message(int sockfd, const std::string& message);
 
-    int getMsgFD();
+    int getMsgFD() {
+        return msgfd;
+    }
+    int getCtlFD() {
+        return ctlfd;
+    }
+    void setCtlFD(int fd) {
+        ctlfd = fd;
+    }
     Epoll& getEpoll() {
         return mepoll;
     }
@@ -59,6 +65,7 @@ private:
 
     int srvPort;
     int msgfd;
+    int ctlfd;
     std::atomic<bool> cliRunning; // 用于控制接收线程的运行状态
     std::thread srvThrd;
 };

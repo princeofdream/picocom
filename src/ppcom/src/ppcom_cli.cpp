@@ -105,11 +105,12 @@ int send_message(int sockfd, const std::string& message) {
 
 int main(int argc, char* argv[]) {
     std::string host = "127.0.0.1";
-    int port = 9801;
+    int port = 9800;
     std::string message;
     std::string fifo_path = "/tmp/ffwd_fifo";
     std::string comm_type = "sock";
     int msgfd = -1;
+    int ctlfd = -1;
 
     int opt;
     while ((opt = getopt(argc, argv, "h:p:m:t:f:")) != -1) {
@@ -153,6 +154,10 @@ int main(int argc, char* argv[]) {
         if (msgfd < 0) {
             return msgfd;
         }
+        ctlfd = setup_socket(host, port+1);
+        if (ctlfd < 0) {
+            return ctlfd;
+        }
     } else if (comm_type == "pipe") {
         qLogI("Using pipe communication");
     } else if (comm_type == "fifo") {
@@ -172,16 +177,21 @@ int main(int argc, char* argv[]) {
         }
         // qLogI("Sending message: %s", message.c_str());
         printf("%s", message.c_str());
-        send_message(msgfd, message);
+        send_message(ctlfd, message);
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     // 停止接收线程
     running = false;
-    if (receiver_thread.joinable()) {
-        receiver_thread.join();
-    }
+    // if (receiver_thread.joinable()) {
+    //     receiver_thread.join();
+    // }
 
-    close(msgfd);
+    if (msgfd >= 0) {
+        close(msgfd);
+    }
+    if (ctlfd >= 0) {
+        close(ctlfd);
+    }
     return 0;
 }
